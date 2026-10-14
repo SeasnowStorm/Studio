@@ -9,24 +9,27 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Studio">
-<meta name="theme-color" content="#241b21">
+<meta name="theme-color" content="#0D1117">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icone-180.png">
 <title>Studio</title>
 <style>
+/* Police Manrope (SIL Open Font License, voir manrope-OFL.txt) servie par le site lui-même : aucun appel à Google */
+@font-face{font-family:"Manrope";src:url("manrope.woff") format("woff");font-weight:200 800;font-style:normal;font-display:swap}
+/* Palette « Encre et corail » */
 :root{
-  --fond:#241b21; --surface:#30252c; --surface-2:#3c2f37; --trait:#4d3e47;
-  --texte:#f3e9e2; --texte-2:#bba8a1; --texte-3:#8f7d78;
-  --lumiere:#f0a143; --lumiere-fonce:#c47a22; --sur-lumiere:#2b1a0b;
-  --ok:#86c9b0; --danger:#ef6a5b;
-  --r-petit:8px; --r:14px; --r-grand:22px;
+  --fond:#0D1117; --fond-scene:#0A0E14; --surface:#141B26; --surface-2:#1C2533; --trait:#2A3546; --trait-doux:#1F2733;
+  --texte:#E9EDF3; --texte-2:#A3ADBC; --texte-3:#7D8898;
+  --lumiere:#FF8A65; --lumiere-fonce:#E36E4B; --sur-lumiere:#2A0F06;
+  --ok:#7FD1B0; --danger:#F2626B;
+  --r-petit:8px; --r:12px; --r-grand:16px;
   --haut:env(safe-area-inset-top); --bas:env(safe-area-inset-bottom);
   color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--fond);color:var(--texte);
-  font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+  font:300 15px/1.45 Manrope,-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-text-size-adjust:100%}
 body{min-height:100vh;overscroll-behavior-y:none}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -171,7 +174,7 @@ details.avance[open] summary::after{content:"−"}
 .jour{font-size:14px;font-weight:650;color:var(--texte-2);margin:18px 0 0}
 
 /* ---------- visionneuse ---------- */
-.visionneuse{position:fixed;inset:0;z-index:50;background:#120d10;display:flex;flex-direction:column}
+.visionneuse{position:fixed;inset:0;z-index:50;background:var(--fond-scene);display:flex;flex-direction:column}
 .visionneuse .haut{display:flex;justify-content:space-between;align-items:center;padding:calc(var(--haut) + 8px) 12px 8px}
 .visionneuse .scene{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-y}
 .visionneuse .scene img{max-width:100%;max-height:100%;object-fit:contain}
@@ -180,7 +183,7 @@ details.avance[open] summary::after{content:"−"}
 .visionneuse .actions .bouton{flex:1;padding:12px 6px}
 
 /* ---------- feuilles et dialogues ---------- */
-.voile-fond{position:fixed;inset:0;background:rgba(10,6,8,.6);z-index:40}
+.voile-fond{position:fixed;inset:0;background:rgba(4,6,10,.66);z-index:40}
 .feuille{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--fond);border-top:1px solid var(--trait);
   border-radius:var(--r-grand) var(--r-grand) 0 0;max-height:88vh;overflow:auto;padding:8px 16px calc(var(--bas) + 20px)}
 .feuille .poignee{width:40px;height:5px;border-radius:3px;background:var(--trait);margin:4px auto 10px}
@@ -195,7 +198,7 @@ pre.journal{white-space:pre-wrap;word-break:break-word;font:12px/1.4 ui-monospac
   border:1px solid var(--trait);border-radius:var(--r);padding:10px;max-height:50vh;overflow:auto;color:var(--texte-2)}
 dialog{border:1px solid var(--trait);background:var(--surface);color:var(--texte);border-radius:var(--r-grand);
   padding:20px;width:min(92vw,420px)}
-dialog::backdrop{background:rgba(10,6,8,.7)}
+dialog::backdrop{background:rgba(4,6,10,.72)}
 dialog h2{margin:0 0 8px}
 dialog .rangee{margin-top:18px}
 .toast{position:fixed;left:16px;right:16px;bottom:calc(var(--bas) + 140px);z-index:60;max-width:560px;margin:0 auto;
@@ -215,12 +218,12 @@ dialog .rangee{margin-top:18px}
 .plein-largeur{width:100%;accent-color:var(--lumiere)}
 .depot{border:1.5px dashed var(--trait);border-radius:var(--r-grand);padding:22px 18px;text-align:left;margin-top:8px}
 .depot.survol{border-color:var(--lumiere);background:color-mix(in srgb,var(--lumiere) 8%,transparent)}
-.toile{position:relative;border-radius:var(--r);overflow:hidden;background:#120d10;margin-top:8px;line-height:0;touch-action:none;user-select:none;-webkit-user-select:none}
+.toile{position:relative;border-radius:var(--r);overflow:hidden;background:var(--fond-scene);margin-top:8px;line-height:0;touch-action:none;user-select:none;-webkit-user-select:none}
 .toile img{width:100%;height:auto;display:block;pointer-events:none}
 .toile canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55;cursor:crosshair;touch-action:none}
 .toile.tout canvas{background:var(--lumiere);opacity:.28;pointer-events:none}
 .pinceau{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-.apercu{margin-top:12px;border-radius:var(--r);overflow:hidden;max-height:260px;display:flex;justify-content:center;background:#120d10}
+.apercu{margin-top:12px;border-radius:var(--r);overflow:hidden;max-height:260px;display:flex;justify-content:center;background:var(--fond-scene)}
 .apercu img{max-height:260px;max-width:100%;object-fit:contain}
 .ref{display:flex;gap:12px;align-items:center}
 .ref img{width:84px;height:84px;object-fit:cover;border-radius:10px}
@@ -254,10 +257,6 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
   nav.onglets button svg{width:20px;height:20px}
   nav.onglets button .badge{top:-2px;left:auto;right:-4px}
   main{max-width:1240px;padding:8px 32px 60px}
-  section.vue.deux-colonnes.active{display:grid;grid-template-columns:minmax(380px,520px) 1fr;gap:44px;align-items:start}
-  #vue-retoucher.active{grid-template-columns:1fr minmax(360px,440px)}
-  .col-res,.col-toile{position:sticky;top:84px}
-  .col-res .recents{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
   .action{bottom:0}
   .galerie{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
   #vue-accueil.active{max-width:560px;margin:0 auto}
@@ -270,9 +269,129 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
   .toile canvas{cursor:none}
 }
 .seulement-pc{display:none}
-@media (min-width:960px){.seulement-pc{display:block}.seulement-pc.cache{display:none}.col-res .vide{border:1.5px dashed var(--trait);border-radius:var(--r-grand);padding:120px 20px}}
+@media (min-width:960px){.seulement-pc{display:block}.seulement-pc.cache{display:none}}
 .pointeur{position:fixed;pointer-events:none;border:1.5px solid var(--lumiere);border-radius:50%;z-index:30;transform:translate(-50%,-50%);display:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.vignette img{opacity:1}}
+.liste-modeles li { display: block; }
+.ligne-modele { display: flex; align-items: center; gap: 10px; }
+.ligne-modele .nom { flex: 1; min-width: 0; }
+.details-modele { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; font-size: 13px; color: var(--texte-3); overflow-wrap: anywhere; }
+.details-modele a { color: inherit; text-decoration: underline; }
+
+/* =====================================================================
+   Étape 2 : style fin, fenêtres délimitées, effet d'appui, ateliers sans défilement de page
+   ===================================================================== */
+b,strong{font-weight:600}
+header h1{font-size:21px;font-weight:600;letter-spacing:-.01em}
+.pastille{font-size:13px;padding:6px 12px 6px 10px}
+h2{font-size:17px;font-weight:500;margin:22px 0 8px}
+h3{font-size:13px;font-weight:500;margin:16px 0 6px;color:var(--texte-2);letter-spacing:.01em}
+.discret{font-size:13.5px}
+.tres-discret,.aide-variantes,.interrupteur small{font-size:12.5px}
+.champ{margin:10px 0}
+.champ > span,.ligne-champ label{font-size:12.5px;color:var(--texte-2)}
+input[type=text],input[type=password],input[type=number],select,textarea{background:var(--fond-scene);border-radius:10px;padding:10px 12px;font-size:16px;font-weight:300}
+.prompt textarea{font-size:16px;min-height:120px}
+.bouton{font-weight:500;min-height:44px;border-radius:10px;background:var(--surface-2)}
+.bouton.principal{font-weight:600}
+.segments button{font-weight:400;font-size:14px;padding:8px 6px;border-radius:9px}
+.segments button[aria-pressed=true]{background:transparent;color:var(--lumiere);box-shadow:0 0 0 1px var(--lumiere)}
+.interrupteur b{font-weight:400}
+.interrupteur{padding:10px 0}
+.lora .tete .nom{font-weight:400}
+.compteur output{font-weight:500}
+.generer{font-size:16px;font-weight:600;border-radius:12px;min-height:50px;letter-spacing:0}
+.stop{min-height:50px;border-radius:12px;font-weight:500}
+.puce{font-size:12.5px}
+.lien{font-weight:500;font-size:13px}
+.accueil-titre{font-size:28px;font-weight:600;letter-spacing:-.02em}
+.etapes li::before{font-weight:500}
+.code-appareil{font-weight:600}
+nav.onglets button{font-weight:500;font-size:12px}
+.mesures b{font-weight:500}
+.bloc{background:var(--surface)}
+@media (pointer:fine){input[type=text],input[type=password],input[type=number],select,textarea,.prompt textarea{font-size:14px}}
+
+/* ---- effet d'appui : visible dès que le doigt touche ---- */
+button,.bouton,a.bouton,.puce,.vignette,.segments button,nav.onglets button{transition:transform .08s ease,filter .08s ease,background-color .08s ease}
+button:active:not(:disabled),.bouton:active:not(:disabled),a.bouton:active,.puce:active{transform:scale(.97);filter:brightness(.82)}
+.generer:active:not(:disabled),.bouton.principal:active:not(:disabled){background:var(--lumiere-fonce);filter:none}
+.vignette:active{transform:scale(.985)}
+nav.onglets button:active{transform:scale(.94)}
+
+/* ---- fenêtres : délimitées, barre de titre fixe avec une croix toujours visible ---- */
+.feuille{background:var(--surface);border:1px solid var(--trait);padding-top:0;box-shadow:0 -10px 40px rgba(0,0,0,.45)}
+.feuille .poignee{margin:8px auto 2px}
+.feuille .titre{position:sticky;top:0;z-index:3;background:var(--surface);margin:0 -16px 6px;padding:8px 10px 8px 16px;
+  border-bottom:1px solid var(--trait)}
+.feuille .titre h2{margin:0;font-size:16px}
+.feuille .titre .croix,.visionneuse .haut .croix{width:40px;height:40px;border-radius:50%;border:1px solid var(--trait);
+  background:var(--surface-2);color:var(--texte);font-size:15px;display:grid;place-items:center;flex:none}
+.visionneuse .haut{background:var(--fond-scene);border-bottom:1px solid var(--trait-doux)}
+dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.toast{background:var(--surface-2)}
+
+/* ---- ateliers (Créer, Retoucher) : lot en grand, réglages dans des panneaux qui défilent seuls ---- */
+.res-tete{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13px;color:var(--texte-2);margin-bottom:8px}
+.res .vide{padding:28px 10px;border:1px dashed var(--trait);border-radius:var(--r);font-size:13px}
+.recents{gap:8px}
+.res .recents{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0}
+.res .recents[data-n="1"]{grid-template-columns:minmax(0,1fr)}
+.res .vignette,.case-attente{aspect-ratio:1;border-radius:10px;background:var(--fond-scene);border:1px solid var(--trait-doux)}
+.res .vignette img{object-fit:contain}
+.case-attente{display:grid;place-items:center;border-style:dashed;border-color:var(--trait);color:var(--texte-3);font-size:12.5px;
+  background:linear-gradient(110deg,var(--fond-scene) 30%,var(--surface) 50%,var(--fond-scene) 70%);background-size:300% 100%;animation:attente 1.6s linear infinite}
+.zone-toile .depot{margin-top:0}
+.toile{width:fit-content;max-width:100%;margin:0 auto;background:var(--fond-scene)}
+.toile img{width:auto;max-width:100%;height:auto;max-height:var(--h-toile,34dvh)}
+.panneau > :first-child{margin-top:8px}
+.panneau h3:first-child{margin-top:12px}
+
+@media (max-width:959.98px){
+  body.atelier{height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+  body.atelier header{position:relative;flex:none}
+  body.atelier main{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 12px calc(var(--bas) + 70px)}
+  body.atelier section.vue.atelier.active{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+  .atelier .res{flex:none;max-height:50%;overflow:auto;--h-toile:30dvh}
+  .atelier .reglages{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--surface);
+    border:1px solid var(--trait);border-radius:var(--r-grand);padding:0 14px 14px}
+  .atelier .panneau.droite{border-top:1px solid var(--trait);margin-top:12px}
+  .atelier .action{flex:none;position:static;margin:0;padding:0;background:none}
+  .atelier .pinceau{margin-top:8px;gap:8px}
+  #vue-retoucher .res .recents{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #vue-retoucher .res{max-height:60%;--h-toile:26dvh}
+}
+@media (min-width:960px){
+  body.atelier{height:100vh;overflow:hidden}
+  body.atelier main{max-width:none;height:calc(100vh - 68px);padding:4px 16px 16px}
+  body.atelier section.vue.atelier.active{display:grid;height:100%;grid-template-columns:340px minmax(0,1fr) 320px;
+    grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"g r d" "a r d";gap:12px}
+  .atelier .reglages{display:contents}
+  .atelier .panneau{background:var(--surface);border:1px solid var(--trait);border-radius:var(--r-grand);padding:0 16px 16px;overflow:auto;min-height:0}
+  .atelier .panneau.gauche{grid-area:g}
+  .atelier .panneau.droite{grid-area:d}
+  .atelier .action{grid-area:a;position:static;margin:0;padding:0;background:none}
+  .atelier .res{grid-area:r;background:var(--fond-scene);border:1px solid var(--trait-doux);border-radius:var(--r-grand);padding:14px;
+    display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
+  #vue-creer .res .vide{flex:1;display:grid;place-items:center}
+  #f-recents-bloc{flex:1;min-height:0}
+  #f-recents{height:100%;grid-auto-rows:minmax(0,1fr)}
+  #f-recents[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
+  #f-recents[data-n="3"],#f-recents[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+  #f-recents[data-n="5"],#f-recents[data-n="6"]{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+  #f-recents[data-n="7"],#f-recents[data-n="8"]{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+  #f-recents .vignette,#f-recents .case-attente{aspect-ratio:auto;height:100%;min-height:0}
+  #vue-retoucher .res{--h-toile:calc(100vh - 430px)}
+  #vue-retoucher .zone-toile{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
+  #r-vide{margin-block:auto}
+  #r-recents-bloc{flex:none;margin-top:12px}
+  #r-recents{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #r-recents .vignette,#r-recents .case-attente{aspect-ratio:auto;height:150px}
+  .atelier .pinceau{flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px}
+  .atelier .pinceau .segments{flex:0 0 200px}
+  .atelier .pinceau .curseur{flex:1;min-width:160px;margin:0}
+  .atelier .pinceau .rangee{flex:1 1 100%}
+}
 </style>
 </head>
 <body>
@@ -336,8 +455,14 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
   </section>
 
   <!-- ================= CRÉER ================= -->
-  <section class="vue deux-colonnes" id="vue-creer">
-   <div class="col-form">
+  <section class="vue atelier" id="vue-creer">
+   <div class="res" id="f-res">
+    <div class="res-tete"><span id="f-lot-titre">Lot en cours</span><span class="tres-discret" id="f-lot-info"></span></div>
+    <p class="vide" id="f-recents-vide">Les images du lot que tu lances apparaîtront ici.</p>
+    <div id="f-recents-bloc" class="cache"><div class="recents" id="f-recents"></div></div>
+   </div>
+   <div class="reglages">
+    <div class="panneau gauche">
     <label class="champ"><span>Workflow</span><select id="f-workflow"></select></label>
     <div id="f-std-haut">
     <label class="champ"><span>Modèle</span><select id="f-modele"></select></label>
@@ -364,11 +489,34 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
       <div><b>Plus de variété</b><small>LoRA de diversité SDA sur les premières étapes</small></div>
       <label class="bascule"><input type="checkbox" id="f-sda"><span></span></label>
     </div>
+    <div id="f-reid-bloc" class="cache">
+      <div class="interrupteur">
+        <div><b>Garder l'identité d'une photo (ReID)</b><small>Nouvelle image d'une personne d'après sa photo (LoRA communautaire)</small></div>
+        <label class="bascule"><input type="checkbox" id="f-reid"><span></span></label>
+      </div>
+      <div id="f-reid-installer" class="bloc cache">
+        <p class="tres-discret" id="f-reid-texte"></p>
+        <p class="tres-discret"><b>Uniquement sur des personnages fictifs ou des personnes d'accord.</b></p>
+        <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="f-reid-liste" checked><span></span></label></div>
+        <button class="bouton principal plein" type="button" id="f-reid-btn">Installer Krea 2 ReID</button>
+      </div>
+      <div id="f-reid-ref" class="cache">
+        <div class="ref-liste" id="f-reid-apercu"></div>
+        <div class="rangee" style="margin-top:8px"><button class="bouton petit" type="button" id="f-reid-importer">Importer</button><button class="bouton petit" type="button" id="f-reid-galerie">Galerie</button></div>
+        <p class="tres-discret">Photo recadrée sur le visage, les cheveux et le haut du corps : une photo en pied transmet aussi la tenue et la pose. Réglages de l'auteur : Krea 2 Turbo, 8 étapes, CFG 1. La photo n'est gardée que pendant la session.</p>
+      </div>
+    </div>
     <div class="interrupteur cache" id="f-rapide-ligne">
       <div><b>Mode rapide</b><small>Qwen Image 2.1 Turbo : 8 étapes au lieu de 30</small></div>
       <label class="bascule"><input type="checkbox" id="f-rapide"><span></span></label>
     </div>
-
+    </div>
+    <div id="f-wf" class="cache"></div>
+    <h3>Nombre d'images</h3>
+    <div class="compteur"><button type="button" id="f-moins" aria-label="Moins">−</button><output id="f-nombre">1</output><button type="button" id="f-plus" aria-label="Plus">+</button></div>
+    </div>
+    <div class="panneau droite">
+    <div id="f-std-droite">
     <h3>LoRA</h3>
     <div id="f-loras"></div>
     <select id="f-ajout-lora" aria-label="Ajouter un LoRA"></select>
@@ -394,22 +542,19 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
     </details>
     <button class="lien" type="button" id="f-exporter" style="margin-top:12px">Télécharger ce workflow pour ComfyUI</button>
     </div>
-    <div id="f-wf" class="cache"></div>
-
-    <h3>Nombre d'images</h3>
-    <div class="compteur"><button type="button" id="f-moins" aria-label="Moins">−</button><output id="f-nombre">1</output><button type="button" id="f-plus" aria-label="Plus">+</button></div>
-
+    <p class="tres-discret cache" id="f-droite-wf">Avec un workflow personnel, le modèle, les LoRA et les nœuds se règlent dans ComfyUI.</p>
+    </div>
+   </div>
     <div class="action">
       <button class="generer" type="button" id="btn-generer"><i class="avance-gen" id="gen-avance"></i><span id="gen-texte">Générer</span></button>
       <button class="stop cache" type="button" id="btn-stop">Arrêter</button>
     </div>
-   </div>
-   <div class="col-res"><p class="vide seulement-pc" id="f-recents-vide">Les images que tu génères apparaîtront ici.</p><div id="f-recents-bloc" class="cache"><h3>Dernières images</h3><div class="recents" id="f-recents"></div></div></div>
   </section>
 
   <!-- ================= RETOUCHER ================= -->
-  <section class="vue deux-colonnes" id="vue-retoucher">
-   <div class="col-toile">
+  <section class="vue atelier" id="vue-retoucher">
+   <div class="res" id="r-res">
+    <div class="zone-toile">
     <div id="r-vide" class="depot">
       <p><b>Choisis l'image à modifier</b></p>
       <p class="tres-discret">Une image de la session ou une photo. Les photos sont réduites et débarrassées de leurs métadonnées (lieu, appareil) avant d'être envoyées.</p>
@@ -429,8 +574,11 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
         <label class="bascule"><input type="checkbox" id="r-tout"><span></span></label>
       </div>
     </div>
+    </div>
+    <div id="r-recents-bloc" class="cache"><div class="res-tete"><span>Résultats du lot</span><span class="tres-discret" id="r-lot-info"></span></div><div class="recents" id="r-recents"></div></div>
    </div>
-   <div class="col-form">
+   <div class="reglages">
+    <div class="panneau gauche">
     <div id="r-qwen" class="bloc cache">
       <p><b>Qwen Image 2.1, le modèle de retouche conseillé</b></p>
       <p class="tres-discret">Modèle officiel (int8), encodeur de texte, VAE et LoRA Turbo depuis le dépôt Comfy-Org sur Hugging Face : environ 18 Go sur le disque du Pod, chaque fichier vérifié par son empreinte. Licence Qwen Research.</p>
@@ -441,16 +589,17 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
     <div id="r-std-haut">
     <label class="champ"><span>Modèle de retouche</span><select id="r-modele"></select></label>
     <p class="tres-discret" id="r-modele-aide"></p>
-    <div id="r-identite-bloc" class="cache">
-      <div class="interrupteur">
-        <div><b>Identity Edit</b><small>Retouche par consigne qui garde la ressemblance (LoRA communautaire)</small></div>
-        <label class="bascule"><input type="checkbox" id="r-identite"><span></span></label>
+    <div id="r-krea-bloc" class="cache">
+      <h3>Méthode de retouche Krea 2</h3>
+      <div class="segments" id="r-krea-mode" role="group" aria-label="Méthode Krea 2">
+        <button type="button" data-mode="classique">Classique</button><button type="button" data-mode="anypaint">AnyPaint</button><button type="button" data-mode="identite">Identity Edit</button>
       </div>
-      <div id="r-identite-installer" class="bloc cache">
-        <p class="tres-discret">LoRA « Krea 2 Identity Edit » v1.2 (conradlocke, licence Krea 2 Community) : 1,8 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Krea2Edit livrée et vérifiée avec Studio.</p>
+      <p class="tres-discret" id="r-krea-aide"></p>
+      <div id="r-adapt-installer" class="bloc cache">
+        <p class="tres-discret" id="r-adapt-texte"></p>
         <p class="tres-discret"><b>Uniquement sur des personnages fictifs ou des personnes d'accord.</b></p>
-        <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="r-identite-liste" checked><span></span></label></div>
-        <button class="bouton principal plein" type="button" id="r-identite-installer-btn">Installer Krea 2 Identity Edit</button>
+        <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="r-adapt-liste" checked><span></span></label></div>
+        <button class="bouton principal plein" type="button" id="r-adapt-btn"></button>
       </div>
     </div>
     </div>
@@ -482,6 +631,13 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
     <input type="range" id="r-ressemblance" min="0" max="10" step="0.5" class="plein-largeur" aria-label="Ressemblance">
     <p class="tres-discret">4 (conseillé) : visage et silhouette bien gardés. 1 : plus de liberté. Au-delà de 10, les suppressions et remplacements échouent.</p>
     </div>
+    </div>
+    <div id="r-wf" class="cache"></div>
+    <h3>Nombre d'images</h3>
+    <div class="compteur"><button type="button" id="r-moins" aria-label="Moins">−</button><output id="r-nombre">1</output><button type="button" id="r-plus" aria-label="Plus">+</button></div>
+    </div>
+    <div class="panneau droite">
+    <div id="r-std-droite">
     <h3>LoRA</h3>
     <div id="r-loras"></div>
     <select id="r-ajout-lora" aria-label="Ajouter un LoRA"></select>
@@ -494,6 +650,10 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
         <label class="champ" id="r-scheduler-champ"><span>Scheduler</span><select id="r-scheduler"></select></label>
         <label class="champ" id="r-masque-ext"><span>Agrandir le masque (px)</span><input type="number" id="r-extension" inputmode="numeric" min="0" max="64"></label>
         <label class="champ" id="r-masque-flou"><span>Adoucir le bord (px)</span><input type="number" id="r-flou" inputmode="numeric" min="0" max="31"></label>
+        <label class="champ cache r-marge"><span>Agrandir à gauche (px)</span><input type="number" id="r-marge-gauche" inputmode="numeric" min="0" max="1024" step="16"></label>
+        <label class="champ cache r-marge"><span>Agrandir à droite (px)</span><input type="number" id="r-marge-droite" inputmode="numeric" min="0" max="1024" step="16"></label>
+        <label class="champ cache r-marge"><span>Agrandir en haut (px)</span><input type="number" id="r-marge-haut" inputmode="numeric" min="0" max="1024" step="16"></label>
+        <label class="champ cache r-marge"><span>Agrandir en bas (px)</span><input type="number" id="r-marge-bas" inputmode="numeric" min="0" max="1024" step="16"></label>
         <label class="champ cache" id="r-grounding-champ"><span>Vision de la consigne</span><select id="r-grounding">
           <option value="512">512 px (suit mieux la consigne)</option><option value="640">640 px</option><option value="768">768 px (conseillé)</option><option value="1024">1024 px (garde mieux la ressemblance)</option></select></label>
       </div>
@@ -506,15 +666,13 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
     </details>
     <button class="lien" type="button" id="r-exporter" style="margin-top:12px">Télécharger ce workflow pour ComfyUI</button>
     </div>
-    <div id="r-wf" class="cache"></div>
-    <h3>Nombre d'images</h3>
-    <div class="compteur"><button type="button" id="r-moins" aria-label="Moins">−</button><output id="r-nombre">1</output><button type="button" id="r-plus" aria-label="Plus">+</button></div>
+    <p class="tres-discret cache" id="r-droite-wf">Avec un workflow personnel, le modèle, les LoRA et les nœuds se règlent dans ComfyUI.</p>
+    </div>
+   </div>
     <div class="action">
       <button class="generer" type="button" id="btn-retoucher"><i class="avance-gen" id="ret-avance"></i><span id="ret-texte">Retoucher</span></button>
       <button class="stop cache" type="button" id="btn-stop-r">Arrêter</button>
     </div>
-    <div id="r-recents-bloc" class="cache"><h3>Résultats</h3><div class="recents" id="r-recents"></div></div>
-   </div>
   </section>
 
   <!-- ================= IMAGES ================= -->
@@ -565,7 +723,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
 <div class="feuille cache" id="feuille-session" role="dialog" aria-label="Session">
   <div class="interieur">
     <div class="poignee"></div>
-    <div class="titre"><h2>Session</h2><button class="croix" type="button" data-fermer>✕</button></div>
+    <div class="titre"><h2>Session</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
     <div class="mesures" id="s-mesures"></div>
     <label class="champ cache" id="s-prix"><span id="s-prix-label"></span>
       <input type="number" id="s-prix-val" inputmode="decimal" step="0.01" min="0" placeholder="ex. 0.69"></label>
@@ -587,7 +745,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
 <div class="feuille cache" id="feuille-reglages" role="dialog" aria-label="Réglages">
   <div class="interieur">
     <div class="poignee"></div>
-    <div class="titre"><h2>Réglages</h2><button class="croix" type="button" data-fermer>✕</button></div>
+    <div class="titre"><h2>Réglages</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
     <h3>Ton modèle Runpod (à créer une seule fois)</h3>
     <p class="tres-discret">Sur runpod.io : Templates → New Template, type Pod. Container Disk 40 Go, Volume Disk 150 Go monté sur /workspace. Les mêmes valeurs servent sur tous tes appareils.</p>
     <div id="manuel-valeurs"></div>
@@ -612,7 +770,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
 <div class="feuille cache" id="feuille-comfy" role="dialog" aria-label="ComfyUI par tunnel SSH">
   <div class="interieur">
     <div class="poignee"></div>
-    <div class="titre"><h2>ComfyUI (tunnel SSH)</h2><button class="croix" type="button" data-fermer>✕</button></div>
+    <div class="titre"><h2>ComfyUI (tunnel SSH)</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
     <p class="discret">L'interface complète de ComfyUI dans le navigateur de ton ordinateur, par un tunnel SSH chiffré de bout en bout entre ton ordinateur et le Pod. Les images que tu y crées arrivent aussi dans la galerie de Studio.</p>
     <div id="c-etat" class="bloc"></div>
     <details class="avance" id="c-premiere">
@@ -636,7 +794,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
 <div class="feuille cache" id="feuille-import" role="dialog" aria-label="Importer une liste">
   <div class="interieur">
     <div class="poignee"></div>
-    <div class="titre"><h2>Importer une liste</h2><button class="croix" type="button" data-fermer>✕</button></div>
+    <div class="titre"><h2>Importer une liste</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
     <p class="discret">Colle le contenu de mes_modeles_civitai.txt : un lien par ligne, les commentaires après # deviennent les noms.</p>
     <textarea id="import-texte" rows="8" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
     <button class="bouton principal plein" type="button" id="btn-importer" style="margin-top:12px">Ajouter à ma liste</button>
@@ -647,7 +805,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
 <div class="feuille cache" id="feuille-decrire" role="dialog" aria-label="Prompt depuis une image">
   <div class="interieur">
     <div class="poignee"></div>
-    <div class="titre"><h2>Prompt depuis une image</h2><button class="croix" type="button" data-fermer>✕</button></div>
+    <div class="titre"><h2>Prompt depuis une image</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
     <div id="d-installer" class="bloc cache">
       <p>L'outil de description (JoyCaption Beta One, Q8) n'est pas encore sur ce Pod.</p>
       <p class="tres-discret">Environ 10 Go : modèle 8,5 Go et projecteur visuel 0,9 Go depuis Hugging Face, programme koboldcpp 0,6 Go depuis GitHub. Chaque fichier est vérifié par son empreinte SHA-256.</p>
@@ -677,7 +835,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
 <div class="feuille cache" id="feuille-galerie" role="dialog" aria-label="Choisir une image">
   <div class="interieur">
     <div class="poignee"></div>
-    <div class="titre"><h2>Choisir une image</h2><button class="croix" type="button" data-fermer>✕</button></div>
+    <div class="titre"><h2>Choisir une image</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
     <div class="galerie" id="choix-galerie"></div>
   </div>
 </div>
@@ -715,7 +873,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-8ad0b8f036a3.tgz", sha: "8ad0b8f036a32aaf167c3e7edfb709fb070116d22c4e30e4044e463626481f1e"};
+const PAQUET = {fichier: "pod-b50bf65c78dd.tgz", sha: "b50bf65c78dd153d46de7db0255153f7756035364da68977dec235e2063c39f8"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
@@ -882,7 +1040,7 @@ class Canal {
 }
 
 // ------------------------------------------------------------ état de l'application
-const A = {canal: null, etat: null, modeles: null, images: [], versionImages: -1, versionModeles: -1,
+const A = {canal: null, etat: null, modeles: null, images: [], versionImages: -1, versionModeles: -1, demandeModeles: 0,
   vue: "creer", vignettes: new Map(), pleines: new Map(), analyse: null, analyseTravail: null, travauxVus: new Set(),
   formulaireImage: null, genTravail: null, retTravail: null, nouvellesImages: 0, derniersIds: [], derniersRet: [], connexion: "aucune",
   descTravail: null, descImage: null, descCible: "f-prompt", outilTravail: null, acces: null, demandesVues: new Set(), appareils: []};
@@ -1037,7 +1195,13 @@ async function boucle() {
 
 async function suivreVersions() {
   if (A.etat.etape >= 3 && (A.etat.modeles !== A.versionModeles || A.modeles === null)) {
-    try { A.modeles = await A.canal.appel("modeles"); A.versionModeles = A.etat.modeles; rendreModeles(); rendreFormulaireOptions(); rendreRetoucheOptions(); } catch (e) {}
+    // la version est notée AVANT la demande, et une réponse dépassée (suppression entre-temps) est ignorée
+    const version = A.etat.modeles, demande = ++A.demandeModeles;
+    try {
+      const m = await A.canal.appel("modeles");
+      if (demande !== A.demandeModeles) return;
+      A.modeles = m; A.versionModeles = version; rendreModeles(); rendreFormulaireOptions(); rendreRetoucheOptions();
+    } catch (e) {}
   }
   if (A.etat.images !== A.versionImages) {
     const r = await A.canal.appel("images");
@@ -1112,7 +1276,7 @@ function finSession(message) {
   for (const u of A.vignettes.values()) URL.revokeObjectURL(u);
   for (const v of A.pleines.values()) URL.revokeObjectURL(v.url);
   A.vignettes.clear(); A.pleines.clear(); A.analyse = null; A.formulaireImage = null; A.travauxVus.clear(); A.demandesVues.clear();
-  A.derniersIds = []; A.derniersRet = []; RT.source = null; RT.references = []; A.descImage = null; rendreRetouche(); rendreRecents();
+  A.derniersIds = []; A.derniersRet = []; RT.source = null; RT.references = []; A.descImage = null; A.reidRef = null; rendreRetouche(); rendreRecents();
   if (message) toast(message);
   rendre(); rendreGalerie(); rendreModeles(); rendreAnalyse();
 }
@@ -1170,6 +1334,7 @@ function rendre() {
   $("vue-accueil").classList.toggle("active", !pret);
   for (const v of VUES) $("vue-" + v).classList.toggle("active", pret && A.vue === v);
   $("onglets").classList.toggle("cache", !pret);
+  document.body.classList.toggle("atelier", !!pret && (A.vue === "creer" || A.vue === "retoucher"));
   if (!pret) rafraichirAccueil();
   majPastille();
   rendreTravaux();
@@ -1302,8 +1467,10 @@ function rendreSession() {
   $("s-prix").classList.toggle("cache", !(g && !e.prix_heure));
   if (g) { $("s-prix-label").textContent = `Prix horaire de cette carte sur Runpod (${g.replace("NVIDIA ", "").replace("GeForce ", "")}), en $/h`;
     if (document.activeElement !== $("s-prix-val")) $("s-prix-val").value = (S.prefs.prix && S.prefs.prix[g]) || ""; }
-  $("s-version").classList.toggle("cache", !(e.version && e.version !== VERSION_APP));
-  $("s-version").textContent = e.version && e.version !== VERSION_APP ? `Ce Pod utilise la version ${e.version} du Studio, l'application la version ${VERSION_APP} : termine-le et déploies-en un nouveau.` : "";
+  const ecartPaquet = !!(e.paquet && !PAQUET.sha.startsWith("__") && e.paquet !== PAQUET.fichier);
+  $("s-version").classList.toggle("cache", !(e.version && e.version !== VERSION_APP) && !ecartPaquet);
+  $("s-version").textContent = e.version && e.version !== VERSION_APP ? `Ce Pod utilise la version ${e.version} du Studio, l'application la version ${VERSION_APP} : termine-le et déploies-en un nouveau.`
+    : ecartPaquet ? `L'application (${PAQUET.fichier}) et le Pod (${e.paquet}) ne sont pas de la même mise à jour. Si tu viens de publier une nouvelle version : ferme complètement l'application et rouvre-la ; sinon termine ce Pod et déploies-en un nouveau.` : "";
   const ul = $("s-appareils"); ul.textContent = "";
   if (!A.appareils.length) ul.append(el("li", {}, el("span", {class: "nom tres-discret", texte: sessionActive() ? "…" : "Aucune session."})));
   for (const x of A.appareils) ul.append(el("li", {}, el("span", {class: "nom", texte: x.nom}), x.moi ? el("span", {class: "moi", texte: "cet appareil"}) : null,
@@ -1396,14 +1563,14 @@ function rendreReglages() {
 let F = null;
 function formulaireParDefaut() {
   return {modele: null, prompt: "", negatif: "", format: "carre", largeur: 1024, hauteur: 1024, sda: true, sda_gate: 2,
-    loras: [], steps: 8, cfg: 1, sampler: "euler", scheduler: "simple", clip: 1, grainefixe: false, graine: null, nombre: 1, rapide: false, workflow: null};
+    loras: [], steps: 8, cfg: 1, sampler: "euler", scheduler: "simple", clip: 1, grainefixe: false, graine: null, nombre: 1, rapide: false, workflow: null, reid: false};
 }
 F = Object.assign(formulaireParDefaut(), S.form || {});
 let sauverFormMinuteur;
 function sauverForm() { clearTimeout(sauverFormMinuteur); sauverFormMinuteur = setTimeout(() => { S.form = F; sauver(); }, 400); }
 
 function modeleCourant() { return A.modeles && A.modeles.principaux.find((m) => m.rel === F.modele) || null; }
-function lorasCompatibles(m) { return A.modeles ? A.modeles.loras.filter((l) => !l.sda && !l.turbo && !l.reference && !l.identite && (!m || !l.famille || l.famille === m.famille)) : []; }
+function lorasCompatibles(m) { return A.modeles ? A.modeles.loras.filter((l) => !l.sda && !l.turbo && !l.reference && !l.adaptateur && !l.identite && (!m || !l.famille || l.famille === m.famille)) : []; }
 function loraSda() { return A.modeles && A.modeles.loras.find((l) => l.sda) || null; }
 
 function appliquerDefauts(m) {
@@ -1451,8 +1618,22 @@ function rendreFormulaire() {
   for (const b of $("f-format").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.format === fmt);
   $("f-format-perso").classList.toggle("cache", fmt !== "perso");
   $("f-format-perso").textContent = `${F.largeur}×${F.hauteur}`;
+  // Krea 2 ReID
+  const kreaF = !!(m && m.famille === "krea2"), reidOk = adaptInstalle("reid"), reidActif = kreaF && !!F.reid && reidOk;
+  $("f-reid-bloc").classList.toggle("cache", !kreaF);
+  $("f-reid").checked = !!F.reid;
+  const instR = adaptEnCours("reid");
+  $("f-reid-installer").classList.toggle("cache", !(kreaF && F.reid && A.modeles && !reidOk));
+  $("f-reid-texte").textContent = ADAPT.reid.texte;
+  $("f-reid-btn").disabled = !!instR;
+  $("f-reid-btn").textContent = instR ? "Installation en cours…" : "Installer Krea 2 ReID";
+  $("f-reid-ref").classList.toggle("cache", !reidActif);
+  const ap = $("f-reid-apercu"); ap.textContent = "";
+  if (A.reidRef) ap.append(el("div", {class: "ref"}, el("img", {src: A.reidRef.url, alt: "Photo de référence"}),
+    el("div", {}, el("p", {class: "tres-discret", texte: "Identité à garder"}),
+      el("button", {class: "bouton petit", type: "button", texte: "Retirer", onclick: () => { A.reidRef = null; rendreFormulaire(); }}))));
   const sda = loraSda();
-  $("f-sda-ligne").classList.toggle("cache", !(d && d.sda && sda));
+  $("f-sda-ligne").classList.toggle("cache", !(d && d.sda && sda) || reidActif);
   $("f-sda").checked = !!F.sda;
   $("f-gate-champ").classList.toggle("cache", !(d && d.sda && sda && F.sda));
   const rapideDispo = !!(m && m.rapide && !(d && d.turbo_integre));
@@ -1538,6 +1719,11 @@ function demandeCreer() {
   for (let i = 0; i < F.nombre; i++) { const g = base + i; graines.push(g); prompts.push(variantes(prompt, prng(g))); }
   const reglages = {modele: F.modele, negatif: F.negatif, largeur: F.largeur, hauteur: F.hauteur, steps: F.steps, cfg: F.cfg,
     sampler: F.sampler, scheduler: F.scheduler, clip: F.clip, loras: F.loras, sda: F.sda, sda_gate: F.sda_gate, rapide: !!F.rapide};
+  if (m.famille === "krea2" && F.reid) {
+    if (!adaptInstalle("reid")) { toast("Installe d'abord Krea 2 ReID (bouton ci-dessus), ou désactive « Garder l'identité ».", true); return null; }
+    if (!A.reidRef) { toast("Choisis la photo dont il faut garder l'identité.", true); return null; }
+    Object.assign(reglages, {reid: true, reid_image: A.reidRef.id, sda: false});
+  }
   return {reglages, prompts, graines};
 }
 async function generer() {
@@ -1546,7 +1732,7 @@ async function generer() {
   $("btn-generer").disabled = true;
   try {
     const r = await A.canal.appel("generer", dem);
-    A.genTravail = r.travail;
+    A.genTravail = r.travail; A.derniersIds = [];
     if (A.etat) A.etat.travaux.push({id: r.travail, type: "generation", etat: "encours", total: F.nombre, faites: 0, images: []});
     rendreGenerer();
     boucle();
@@ -1570,12 +1756,9 @@ function majBarre(travailId, bouton, texte, avance, stop, libelle, ids, bloc, bo
   }
   if (g && g.images) {
     const nouveaux = g.images.filter((x) => !ids.includes(x));
-    if (nouveaux.length) {
-      const premier = !ids.length;
-      ids.push(...nouveaux); rendreRecents();
-      if (premier && document.contains(bloc) && bloc.offsetParent !== null && window.innerWidth < 960) bloc.scrollIntoView({behavior: "smooth", block: "center"});
-    }
+    if (nouveaux.length) ids.push(...nouveaux);
   }
+  rendreRecents();
 }
 function rendreGenerer() {
   majBarre(A.genTravail, $("btn-generer"), $("gen-texte"), $("gen-avance"), $("btn-stop"),
@@ -1583,13 +1766,30 @@ function rendreGenerer() {
   majBarre(A.retTravail, $("btn-retoucher"), $("ret-texte"), $("ret-avance"), $("btn-stop-r"),
     RT.nombre > 1 ? `Retoucher (${RT.nombre} images)` : "Retoucher", A.derniersRet, $("r-recents-bloc"));
 }
+// Créer et Retoucher n'affichent que le lot en cours (la galerie garde tout) : ses images en grand, et une case
+// d'attente pour chaque image encore à venir.
+const SIGNATURES_LOT = {};
 function rendreRecents() {
-  for (const [ids, boite, bloc] of [[A.derniersIds, "f-recents", "f-recents-bloc"], [A.derniersRet, "r-recents", "r-recents-bloc"]]) {
+  for (const [ids, boite, bloc, travailId, info] of [[A.derniersIds, "f-recents", "f-recents-bloc", A.genTravail, "f-lot-info"],
+                                                      [A.derniersRet, "r-recents", "r-recents-bloc", A.retTravail, "r-lot-info"]]) {
+    const t = A.etat && A.etat.travaux.find((x) => x.id === travailId);
+    const attente = t && t.etat === "encours" ? Math.max(0, (t.total || 0) - ids.length) : 0;
+    const n = ids.length + attente;
+    $(info).textContent = !n ? "" : attente ? `${ids.length} / ${t.total}` : `${ids.length} image${ids.length > 1 ? "s" : ""}`;
+    if (boite === "f-recents") $("f-recents-vide").classList.toggle("cache", !!n);
+    $(bloc).classList.toggle("cache", !n);
+    const sig = ids.join(",") + "|" + attente;
+    if (SIGNATURES_LOT[boite] === sig) continue;
+    SIGNATURES_LOT[boite] = sig;
     const box = $(boite); box.textContent = "";
-    $(bloc).classList.toggle("cache", !ids.length);
-    if (boite === "f-recents") $("f-recents-vide").classList.toggle("cache", !!ids.length);
-    for (const id of ids.slice().reverse()) box.append(vignette(id));
+    box.dataset.n = String(Math.min(n, 8));
+    for (const id of ids) box.append(vignette(id, true));
+    for (let i = 0; i < attente; i++) box.append(el("div", {class: "case-attente", "aria-label": "Image en cours"}, el("span", {texte: "En cours…"})));
   }
+}
+function nouveauLot(cote) {
+  if (cote === "r") A.derniersRet = []; else A.derniersIds = [];
+  rendreRecents();
 }
 
 function remplirDepuis(r, nombre = 1) {
@@ -1646,11 +1846,13 @@ async function pomperVignettes() {
       .catch(() => {}).finally(() => { vignettesActives--; pomperVignettes(); });
   }
 }
-function vignette(id) {
+function vignette(id, grand = false) {
   const img = el("img", {alt: ""});
   const b = el("button", {class: "vignette attente", type: "button", "aria-label": "Ouvrir l'image", onclick: () => ouvrirVisionneuse(id)}, img);
   if (A.vignettes.has(id)) { img.src = A.vignettes.get(id); img.style.opacity = 1; b.classList.remove("attente"); }
   else chargerVignette(id, img, b);
+  // lot en cours affiché en grand : l'image pleine définition remplace la miniature une fois arrivée
+  if (grand) imagePleine(id).then((v) => { if (img.isConnected) { img.src = v.url; img.style.opacity = 1; b.classList.remove("attente"); } }).catch(() => {});
   return b;
 }
 
@@ -1802,7 +2004,7 @@ function carteImage(a) {
 function rendreTravaux() {
   const box = $("m-travaux"); box.textContent = "";
   if (!A.etat) return;
-  const recents = A.etat.travaux.filter((t) => (t.type === "telechargement" || t.type === "image" || t.type === "officiel"));
+  const recents = A.etat.travaux.filter((t) => (t.type === "telechargement" || t.type === "image" || t.type === "officiel" || t.type === "outil"));
   if (!recents.length) return;
   const actifs = recents.filter((t) => t.etat === "attente" || t.etat === "encours");
   const echecs = recents.filter((t) => t.etat === "erreur");
@@ -1813,8 +2015,16 @@ function rendreTravaux() {
     if (t.progres && t.progres.total) barre.firstChild.style.width = Math.min(100, 100 * t.progres.fait / t.progres.total) + "%";
     const detail = t.etat === "attente" ? "En attente" : t.etat === "erreur" ? t.erreur :
       (t.detail || "") + (t.progres ? ` · ${t.progres.fait}${t.progres.total ? " / " + t.progres.total : ""} Go` : "");
-    box.append(el("div", {class: "bloc"}, el("p", {}, el("b", {texte: t.titre})), el("p", {class: t.etat === "erreur" ? "erreur-texte" : "tres-discret", texte: detail}), t.etat === "erreur" ? null : barre));
+    const arret = t.arretable ? el("button", {class: "bouton petit danger", type: "button", texte: "Arrêter", style: "margin-top:8px",
+      onclick: (ev) => annulerTelechargement(t, ev.currentTarget)}) : null;
+    box.append(el("div", {class: "bloc"}, el("p", {}, el("b", {texte: t.titre})), el("p", {class: t.etat === "erreur" ? "erreur-texte" : "tres-discret", texte: detail}), t.etat === "erreur" ? null : barre, arret));
   }
+}
+async function annulerTelechargement(t, bouton) {
+  if (!(await confirmer("Arrêter ce téléchargement ?", `« ${t.titre} » : la partie déjà téléchargée est effacée, rien n'est installé. Pour une installation en plusieurs fichiers, ceux déjà terminés et vérifiés restent sur le Pod.`, "Arrêter"))) return;
+  if (bouton) bouton.disabled = true;
+  try { await A.canal.appel("annuler_travail", {id: t.id}); toast("Téléchargement arrêté."); boucle(); }
+  catch (e) { toast(e.message, true); if (bouton) bouton.disabled = false; }
 }
 
 function rendreOfficiels() {
@@ -1839,8 +2049,35 @@ function rendreModeles() {
   for (const [titre, items] of groupes) {
     if (!items.length) continue;
     box.append(el("h3", {texte: `${titre} (${items.length})`}));
-    box.append(el("ul", {class: "liste-simple"}, ...items.map((x) => el("li", {}, el("span", {class: "nom", texte: x.nom}), el("span", {class: "taille", texte: x.go >= 1 ? `${x.go} Go` : `${x.mo} Mo`})))));
+    box.append(el("ul", {class: "liste-simple liste-modeles"}, ...items.map((x) => elementModele(x, titre))));
   }
+}
+function sourceModele(x) {
+  if (x.source) return x.source;
+  // modèle de Civitai : le nom sur le disque est le début de son empreinte ; ma liste (sur l'appareil) donne le lien
+  const base = (x.fichier || "").replace(/\.safetensors$/, "").toLowerCase();
+  const l = base.length >= 16 && S.liste.find((y) => y.sha && y.sha.toLowerCase().startsWith(base));
+  return l ? l.lien : null;
+}
+function elementModele(x, groupe) {
+  const src = sourceModele(x);
+  const exact = x.origine && x.origine !== x.fichier ? `${x.origine} (sur le disque : ${x.fichier})` : (x.fichier || x.rel);
+  const details = el("div", {class: "details-modele"},
+    el("span", {texte: "Fichier : " + exact}),
+    el("span", {texte: "Variante : " + (x.variante || "non indiquée")}),
+    src ? el("span", {}, "Source : ", el("a", {href: src, target: "_blank", rel: "noopener noreferrer", texte: src}))
+        : el("span", {texte: "Source : non connue (relancement du Studio sur ce Pod, ou fichier ajouté à la main)"}));
+  return el("li", {},
+    el("div", {class: "ligne-modele"}, el("span", {class: "nom", texte: x.nom}),
+      el("span", {class: "taille", texte: x.go >= 1 ? `${x.go} Go` : `${x.mo} Mo`}),
+      el("button", {class: "croix", type: "button", "aria-label": "Supprimer du Pod", texte: "✕", onclick: () => supprimerModele(x, groupe)})),
+    details);
+}
+async function supprimerModele(x, groupe) {
+  const avert = groupe === "Composants" ? " C'est un composant (encodeur, VAE…) : les modèles qui en ont besoin ne fonctionneront plus tant qu'il n'est pas réinstallé." : "";
+  if (!(await confirmer("Supprimer ce fichier du Pod ?", `« ${x.nom} » (${x.go >= 1 ? x.go + " Go" : x.mo + " Mo"}) est effacé du disque du Pod.${avert} Ta liste de modèles sur cet appareil n'est pas modifiée : retire-le aussi de « Ma liste » si tu ne veux plus qu'il soit réinstallé.`, "Supprimer"))) return;
+  try { await A.canal.appel("supprimer_modele", {chemin: x.chemin}); toast("Fichier supprimé du Pod."); A.demandeModeles++; A.versionModeles = -1; boucle(); }
+  catch (e) { toast(e.message, true); }
 }
 
 function ajouterListe(l) {
@@ -1930,9 +2167,13 @@ function choisirDansGalerie() {
 // Réglages propres à la retouche (indépendants de Créer) ; null = valeur conseillée du modèle choisi.
 const RT_DEFAUTS = {source: null, references: [], prompt: "", negatif: "", modele: null, force: null, tout: false, proteger: true,
   rapide: false, loras: [], nombre: 1, extension: 8, flou: 9, steps: null, cfg: null, sampler: null, scheduler: null,
-  grainefixe: false, graine: null, outil: "peindre", taille: 48, workflow: null, identite: false, ressemblance: 4, grounding: 768};
+  grainefixe: false, graine: null, outil: "peindre", taille: 48, workflow: null, identite: false, ressemblance: 4, grounding: 768,
+  modeKrea: "classique", marges: {gauche: 0, droite: 0, haut: 0, bas: 0}};
 const RT = Object.assign({}, RT_DEFAUTS, S.retouche || {}, {source: null, references: []});
-if (!Array.isArray(RT.loras)) RT.loras = [];      // ancienne version : simple interrupteur « Appliquer mes LoRA »
+if (!Array.isArray(RT.loras)) RT.loras = [];
+if (RT.identite && RT.modeKrea === "classique") RT.modeKrea = "identite";   // version précédente : interrupteur Identity Edit
+delete RT.identite;
+if (!RT.marges || typeof RT.marges !== "object") RT.marges = {gauche: 0, droite: 0, haut: 0, bas: 0};      // ancienne version : simple interrupteur « Appliquer mes LoRA »
 delete RT.reference;
 let sauverRTMinuteur;
 function sauverRT() { clearTimeout(sauverRTMinuteur); sauverRTMinuteur = setTimeout(() => {
@@ -1943,23 +2184,37 @@ function modeleRT() { return modelesRetouche().find((m) => m.rel === RT.modele) 
 function loraReference() { return A.modeles && A.modeles.loras.find((l) => l.reference) || null; }
 function forceDefaut(m) { return m && m.famille === "qwen21" ? 1 : 0.85; }
 // Krea 2 Identity Edit : mode actif seulement avec un modèle Krea 2, le LoRA installé et sans workflow personnel
-function modeIdentite(m = modeleRT()) { return !!(RT.identite && m && m.famille === "krea2" && A.modeles && A.modeles.identite && !wfCourant("r")); }
-function defautsRT(m) {   // réglages conseillés du modèle ; en Identity Edit, ceux de l'auteur (Turbo 10 étapes CFG 1, Raw 30 / CFG 3)
+// Adaptateurs Krea 2 (LoRA fonctionnels + extensions livrées avec Studio)
+const ADAPT = {
+  identite: {nom: "Krea 2 Identity Edit", texte: "LoRA « Krea 2 Identity Edit » v1.2 (conradlocke, licence Krea 2 Community) : 1,8 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Krea2Edit livrée et relue avec Studio."},
+  anypaint: {nom: "Krea 2 AnyPaint", texte: "LoRA « Krea 2 AnyPaint » (yijunwang2, licence Krea 2 Community) : 0,23 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Krea2 AnyPaint livrée et relue avec Studio."},
+  reid: {nom: "Krea 2 ReID", texte: "LoRA « Krea 2 ReID » (yijunwang2, licence Krea 2 Community) : 0,23 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Ostris Edit livrée et relue avec Studio."},
+};
+function adaptInstalle(k) { return !!(A.modeles && A.modeles.adaptateurs && A.modeles.adaptateurs[k]); }
+function adaptEnCours(k) { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === k && (t.etat === "attente" || t.etat === "encours")); }
+function modeKrea(m = modeleRT()) { return m && m.famille === "krea2" && !wfCourant("r") && adaptInstalle(RT.modeKrea) ? RT.modeKrea : "classique"; }
+function modeIdentite(m = modeleRT()) { return modeKrea(m) === "identite"; }
+function modeAnypaint(m = modeleRT()) { return modeKrea(m) === "anypaint"; }
+function defautsRT(m) {   // réglages conseillés du modèle ; avec un adaptateur, ceux de son auteur
   const d = m && m.defauts; if (!d) return null;
-  if (!modeIdentite(m)) return d;
-  const turbo = d.variante === "Turbo";
-  return Object.assign({}, d, {steps: turbo ? 10 : 30, cfg: turbo ? 1 : 3, negatif: false});
+  const k = modeKrea(m), turbo = d.variante === "Turbo";
+  if (k === "identite") return Object.assign({}, d, {steps: turbo ? 10 : 30, cfg: turbo ? 1 : 3, negatif: false});
+  if (k === "anypaint") return Object.assign({}, d, turbo ? {steps: 8, cfg: 1, negatif: false} : {});
+  return d;
 }
-function identiteEnCours() { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "identite" && (t.etat === "attente" || t.etat === "encours")); }
+function identiteEnCours() { return adaptEnCours("identite"); }
+function margesRT() { const g = RT.marges || {}; return {gauche: g.gauche | 0, droite: g.droite | 0, haut: g.haut | 0, bas: g.bas | 0}; }
+function avecMarges() { const g = margesRT(); return !!(g.gauche || g.droite || g.haut || g.bas); }
 function maxReferences(m) {
   if (!m) return 0;
   if (modeIdentite(m)) return 1;
+  if (modeAnypaint(m)) return 0;
   if (m.famille === "qwen21") return 4;
   if (m.famille === "flux2" || (m.famille === "krea2" && loraReference())) return 1;
   return 0;
 }
 function maxReferencesRT() { const w = wfCourant("r"); return w ? Math.max(0, w.nb_images - 1) : maxReferences(modeleRT()); }
-function installQwenEnCours() { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi !== "identite" && (t.etat === "attente" || t.etat === "encours")); }
+function installQwenEnCours() { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && (!t.quoi || t.quoi === "qwen21") && (t.etat === "attente" || t.etat === "encours")); }
 
 function rendreRetoucheOptions() {
   const sel = $("r-modele"); sel.textContent = "";
@@ -1989,7 +2244,7 @@ function choisirModeleRT(rel) {
 }
 
 function rendreRetouche() {
-  const m = modeleRT(), d = defautsRT(m), qwen = !!(m && m.famille === "qwen21"), ident = modeIdentite(m);
+  const m = modeleRT(), d = defautsRT(m), qwen = !!(m && m.famille === "qwen21"), ident = modeIdentite(m), anyp = modeAnypaint(m);
   $("r-vide").classList.toggle("cache", !!RT.source);
   $("r-editeur").classList.toggle("cache", !RT.source);
   $("r-toile").classList.toggle("tout", !!RT.tout);
@@ -2001,15 +2256,23 @@ function rendreRetouche() {
   $("r-qwen").classList.toggle("cache", !A.modeles || !!A.modeles.qwen21);
   $("r-qwen-installer").disabled = !!inst;
   $("r-qwen-installer").textContent = inst ? "Installation en cours… " + (inst.progres ? `${inst.progres.fait}${inst.progres.total ? " / " + inst.progres.total : ""} Go` : "") : "Installer Qwen Image 2.1";
-  // Krea 2 Identity Edit
-  const krea = !!(m && m.famille === "krea2") && !wfCourant("r"), instId = identiteEnCours();
-  $("r-identite-bloc").classList.toggle("cache", !krea);
-  $("r-identite").checked = !!RT.identite;
-  $("r-identite").disabled = !(A.modeles && A.modeles.identite);
-  $("r-identite-installer").classList.toggle("cache", !krea || !A.modeles || !!A.modeles.identite);
-  $("r-identite-installer-btn").disabled = !!instId;
-  $("r-identite-installer-btn").textContent = instId ? "Installation en cours…" + (instId.progres ? ` ${instId.progres.fait}${instId.progres.total ? " / " + instId.progres.total : ""} Go` : "") : "Installer Krea 2 Identity Edit";
-  $("r-force-bloc").classList.toggle("cache", ident);
+  // Krea 2 : méthode classique, AnyPaint ou Identity Edit
+  const krea = !!(m && m.famille === "krea2") && !wfCourant("r"), choix = RT.modeKrea || "classique";
+  $("r-krea-bloc").classList.toggle("cache", !krea);
+  for (const b of $("r-krea-mode").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.mode === choix);
+  const manque = krea && choix !== "classique" && A.modeles && !adaptInstalle(choix), instA = manque && adaptEnCours(choix);
+  $("r-adapt-installer").classList.toggle("cache", !manque);
+  if (manque) {
+    $("r-adapt-texte").textContent = ADAPT[choix].texte;
+    $("r-adapt-btn").disabled = !!instA;
+    $("r-adapt-btn").textContent = instA ? "Installation en cours…" + (instA.progres ? ` ${instA.progres.fait}${instA.progres.total ? " / " + instA.progres.total : ""} Go` : "") : "Installer " + ADAPT[choix].nom;
+  }
+  $("r-krea-aide").textContent = !krea ? "" : choix === "anypaint" ? "AnyPaint : seule la zone peinte est recréée, le reste est conservé (bande de raccord de 32 px). Peut aussi agrandir le cadre (réglages fins)."
+    : choix === "identite" ? "Identity Edit : l'image est recréée selon ta consigne en gardant la ressemblance."
+    : "Classique : la zone peinte est recréée avec le modèle tel quel.";
+  $("r-force-bloc").classList.toggle("cache", ident || anyp);
+  for (const x of document.querySelectorAll(".r-marge")) x.classList.toggle("cache", !anyp);
+  const mg = margesRT(); for (const k of ["gauche", "droite", "haut", "bas"]) if (document.activeElement !== $("r-marge-" + k)) $("r-marge-" + k).value = mg[k];
   $("r-ressemblance-bloc").classList.toggle("cache", !ident);
   $("r-ressemblance").value = RT.ressemblance ?? 4; $("r-ressemblance-val").textContent = String(RT.ressemblance ?? 4);
   $("r-grounding-champ").classList.toggle("cache", !ident);
@@ -2021,6 +2284,11 @@ function rendreRetouche() {
   $("r-prompt-aide").textContent = qwen ? "Qwen suit des consignes (« ajoute… », « remplace… », « change… »)." +
     (RT.references.length ? ` Désigne les références par ${RT.references.map((_, i) => `<image${i + 2}>`).join(", ")}, l'image à modifier par <image1>.` : "")
     : "Variantes : écris {rouge|bleu} et chaque image en tire une au hasard.";
+  if (anyp) {
+    $("r-prompt-label").textContent = "Description de l'image voulue";
+    $("r-prompt").placeholder = "Décris l'image entière telle qu'elle doit être, y compris ce que tu ajoutes dans la zone peinte.";
+    $("r-prompt-aide").textContent = "AnyPaint attend une description de toute l'image (pas une consigne). Variantes : {rouge|bleu}.";
+  }
   if (ident) {
     $("r-prompt").placeholder = RT.references.length ? "Ex. : Place this person at the cafe table, holding a coffee." : "Ex. : Change her outfit to a red raincoat.";
     $("r-prompt-aide").textContent = "Une consigne simple, de préférence en anglais. Visage trop « générique » ? Ajoute : « Preserve the exact facial identity » et décris ses traits. Zone peinte facultative : si tu peins, seule cette zone change.";
@@ -2055,7 +2323,7 @@ function rendreRetouche() {
   $("r-graine-fixe").checked = !!RT.grainefixe; $("r-graine").classList.toggle("cache", !RT.grainefixe);
   if (RT.graine !== null && $("r-graine").value !== String(RT.graine)) $("r-graine").value = RT.graine;
   $("r-nombre").textContent = RT.nombre;
-  $("r-modele-aide").textContent = !m ? "" : ident ? "Krea 2 Identity Edit : l'image est recréée selon ta consigne en gardant la ressemblance. Turbo pour la plupart des retouches ; Raw (CFG 3) pour supprimer quelque chose." :
+  $("r-modele-aide").textContent = !m ? "" : anyp ? "Krea 2 AnyPaint : inpainting et agrandissement sur masque, réglages de l'auteur (Turbo, 8 étapes, CFG 1)." : ident ? "Krea 2 Identity Edit : l'image est recréée selon ta consigne en gardant la ressemblance. Turbo pour la plupart des retouches ; Raw (CFG 3) pour supprimer quelque chose." :
     qwen ? "Qwen Image 2.1 : retouche par consigne, jusqu'à 4 images de référence." :
     m.famille === "flux2" ? "Flux.2 Klein : fidèle à l'image d'origine, accepte une référence." :
     m.famille === "krea2" ? "Krea 2 : une référence possible avec son LoRA « Style Reference »." : "Retouche classique (inpainting), sans référence.";
@@ -2067,7 +2335,9 @@ function rendreRetouche() {
 function rendreReferences(m) {
   const box = $("r-ref"); box.textContent = "";
   const max = maxReferences(m), fam = m && m.famille;
-  const ident = modeIdentite(m);
+  const ident = modeIdentite(m), anypR = modeAnypaint(m);
+  $("r-ref-titre").classList.toggle("cache", anypR); box.classList.toggle("cache", anypR);
+  if (anypR) return;   // AnyPaint : pas d'image de référence
   $("r-ref-titre").textContent = ident ? "Personne à placer dans la scène (facultatif)" : max > 1 ? `Images de référence (facultatif, jusqu'à ${max})` : "Image de référence (facultatif)";
   if (max) {
     const liste = el("div", {class: "ref-liste"});
@@ -2180,8 +2450,10 @@ function demandeRetouche() {
   if (!m) { toast("Choisis un modèle.", true); return null; }
   const prompt = RT.prompt.trim();
   if (!prompt) { toast(m.famille === "qwen21" ? "Écris ta consigne de retouche." : "Décris ce que tu veux obtenir.", true); $("r-prompt").focus(); return null; }
-  const ident = modeIdentite(m);
-  if (!ident && !RT.tout && masqueVide()) { toast("Peins la zone à modifier, ou active « Modifier toute l'image ».", true); return null; }
+  const ident = modeIdentite(m), anyp = modeAnypaint(m);
+  if (m.famille === "krea2" && !wfCourant("r") && RT.modeKrea && RT.modeKrea !== "classique" && !adaptInstalle(RT.modeKrea)) {
+    toast(`Installe d'abord ${ADAPT[RT.modeKrea].nom} (bouton ci-dessus), ou choisis la méthode Classique.`, true); return null; }
+  if (!ident && !RT.tout && masqueVide() && !(anyp && avecMarges())) { toast("Peins la zone à modifier, ou active « Modifier toute l'image ».", true); return null; }
   const d = defautsRT(m);
   const base = RT.grainefixe && Number.isFinite(RT.graine) ? RT.graine : nouvelleGraine();
   const graines = [], prompts = [];
@@ -2191,7 +2463,8 @@ function demandeRetouche() {
     loras: RT.loras.filter((x) => lorasCompatibles(m).some((l) => l.rel === x.rel)), force: RT.force ?? forceDefaut(m),
     extension: RT.extension, flou: RT.flou, proteger: RT.proteger !== false, rapide: !!RT.rapide,
     source: RT.source.id, references: RT.references.map((r) => r.id),
-    masque: RT.tout || (ident && masqueVide()) ? null : masquePNG()};
+    masque: RT.tout ? (anyp ? masquePlein() : null) : masqueVide() ? null : masquePNG()};
+  if (anyp) Object.assign(reglages, {anypaint: true, marges: margesRT(), force: 1, references: []});
   if (ident) Object.assign(reglages, {identite: true, ressemblance: RT.ressemblance ?? 4, grounding: RT.grounding || 768, force: 1, negatif: ""});
   return {reglages, prompts, graines};
 }
@@ -2206,15 +2479,24 @@ async function retoucher() {
   $("btn-retoucher").disabled = true;
   try {
     const r = await A.canal.appel("retoucher", dem, 90000);
-    A.retTravail = r.travail;
+    A.retTravail = r.travail; A.derniersRet = [];
     if (A.etat) A.etat.travaux.push({id: r.travail, type: "generation", etat: "encours", total: RT.nombre, faites: 0, images: []});
     rendreGenerer(); boucle();
   } catch (e) { toast(e.message, true); }
   finally { $("btn-retoucher").disabled = false; rendreGenerer(); }
 }
-async function installerIdentite(liste) {
-  if (!(await confirmer("Installer Krea 2 Identity Edit ?", "LoRA communautaire de 1,8 Go téléchargé depuis Hugging Face (conradlocke, version 1.2 figée, vérifiée par son empreinte), plus l'encodeur et le VAE officiels de Krea 2 s'ils manquent. À n'utiliser que sur des personnages fictifs ou des personnes d'accord.", "Installer", false))) return;
-  try { await A.canal.appel("installer_identite", {liste, jetons: jetons()}); toast("Installation de Krea 2 Identity Edit lancée."); boucle(); }
+async function choisirReid(origine) {
+  try {
+    let r;
+    if (origine === "galerie") { const id = await choisirDansGalerie(); if (!id) return; r = await importerGalerie(id); }
+    else { const f = await choisirFichier(); if (!f) return; toast("Envoi chiffré de la photo…"); r = await importerPhoto(f, 1.0); finToast(); }
+    A.reidRef = r; rendreFormulaire();
+  } catch (e) { toast("Photo non chargée : " + e.message, true); }
+}
+async function installerAdaptateur(k, liste) {
+  const a = ADAPT[k]; if (!a) return;
+  if (!(await confirmer(`Installer ${a.nom} ?`, a.texte + " L'encodeur et le VAE officiels de Krea 2 sont ajoutés s'ils manquent. À n'utiliser que sur des personnages fictifs ou des personnes d'accord.", "Installer", false))) return;
+  try { await A.canal.appel("installer_adaptateur", {quoi: k, liste, jetons: jetons()}); toast(`Installation de ${a.nom} lancée.`); boucle(); }
   catch (e) { toast(e.message, true); }
 }
 async function installerQwen(liste) {
@@ -2248,6 +2530,8 @@ function basculerWorkflow(cote) {
   rendreChoixWorkflow(cote);
   $(cote + "-std-haut").classList.toggle("cache", !!w);
   $(cote + "-std").classList.toggle("cache", !!w);
+  $(cote + "-std-droite").classList.toggle("cache", !!w);
+  $(cote + "-droite-wf").classList.toggle("cache", !w);
   $(cote + "-wf").classList.toggle("cache", !w);
   if (cote === "r" && w) {
     $("r-qwen").classList.add("cache");
@@ -2377,7 +2661,7 @@ async function lancerWorkflow(cote) {
   bouton.disabled = true;
   try {
     const res = await A.canal.appel("executer_workflow", {graphe: w.graphe, valeurs, images, masque, prompts, graines, nom: w.nom}, 90000);
-    if (r) A.retTravail = res.travail; else A.genTravail = res.travail;
+    if (r) { A.retTravail = res.travail; A.derniersRet = []; } else { A.genTravail = res.travail; A.derniersIds = []; }
     if (A.etat) A.etat.travaux.push({id: res.travail, type: "generation", etat: "encours", total: n, faites: 0, images: []});
     rendreGenerer(); boucle();
   } catch (e) { toast(e.message, true); }
@@ -2454,6 +2738,7 @@ function choisirVue(v) {
 
 // ------------------------------------------------------------ événements
 function brancher() {
+  document.addEventListener("touchstart", () => {}, {passive: true});   // iOS : active l'effet d'appui (:active) au toucher
   $("pastille").onclick = () => ouvrirFeuille("session");
   $("voile-fond").onclick = fermerFeuilles;
   for (const b of document.querySelectorAll("[data-fermer]")) b.onclick = fermerFeuilles;
@@ -2620,11 +2905,19 @@ function brancher() {
   $("r-defauts").onclick = () => { const r = RT.modele; RT.extension = 8; RT.flou = 9; choisirModeleRT(r); RT.rapide = false; rendreRetouche(); toast("Réglages du modèle rétablis."); };
   $("r-prompt").oninput = (e) => { RT.prompt = e.target.value; ajusterHauteur(e.target); sauverRT(); };
   $("r-negatif").oninput = (e) => { RT.negatif = e.target.value; sauverRT(); };
-  $("r-identite").onchange = (e) => { RT.identite = e.target.checked; RT.steps = RT.cfg = null;
+  for (const b of $("r-krea-mode").querySelectorAll("button")) b.onclick = () => { RT.modeKrea = b.dataset.mode; RT.steps = RT.cfg = null;
     RT.references = RT.references.slice(0, maxReferencesRT()); sauverRT(); rendreRetouche(); };
+  for (const k of ["gauche", "droite", "haut", "bas"]) $("r-marge-" + k).onchange = (e) => {
+    RT.marges = Object.assign(margesRT(), {[k]: Math.max(0, Math.min(1024, Math.round((parseInt(e.target.value, 10) || 0) / 16) * 16))}); sauverRT(); rendreRetouche(); };
   $("r-ressemblance").oninput = (e) => { RT.ressemblance = parseFloat(e.target.value); $("r-ressemblance-val").textContent = String(RT.ressemblance); sauverRT(); };
   $("r-grounding").onchange = (e) => { RT.grounding = parseInt(e.target.value, 10) || 768; sauverRT(); };
-  $("r-identite-installer-btn").onclick = () => installerIdentite($("r-identite-liste").checked);
+  $("f-reid").onchange = (e) => { F.reid = e.target.checked; const m = modeleCourant();
+    if (F.reid && m && m.defauts && m.defauts.variante === "Turbo") { F.steps = 8; F.cfg = 1; }
+    sauverForm(); rendreFormulaire(); };
+  $("f-reid-btn").onclick = () => installerAdaptateur("reid", $("f-reid-liste").checked);
+  $("f-reid-importer").onclick = () => choisirReid("fichier");
+  $("f-reid-galerie").onclick = () => choisirReid("galerie");
+  $("r-adapt-btn").onclick = () => installerAdaptateur(RT.modeKrea, $("r-adapt-liste").checked);
   $("r-force").oninput = (e) => { RT.force = parseFloat(e.target.value); $("r-force-val").textContent = Math.round(RT.force * 100) + " %"; sauverRT(); };
   for (const [id, k, mini, maxi] of [["r-steps", "steps", 1, 150], ["r-cfg", "cfg", 0, 30], ["r-extension", "extension", 0, 64], ["r-flou", "flou", 0, 31]])
     $(id).onchange = (e) => { let v = parseFloat(e.target.value); if (!Number.isFinite(v)) v = null; else v = Math.max(mini, Math.min(maxi, k === "cfg" ? v : Math.round(v))); RT[k] = v ?? (k === "extension" ? 8 : k === "flou" ? 9 : null); sauverRT(); rendreRetouche(); };
