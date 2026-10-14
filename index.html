@@ -441,6 +441,18 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
     <div id="r-std-haut">
     <label class="champ"><span>Modèle de retouche</span><select id="r-modele"></select></label>
     <p class="tres-discret" id="r-modele-aide"></p>
+    <div id="r-identite-bloc" class="cache">
+      <div class="interrupteur">
+        <div><b>Identity Edit</b><small>Retouche par consigne qui garde la ressemblance (LoRA communautaire)</small></div>
+        <label class="bascule"><input type="checkbox" id="r-identite"><span></span></label>
+      </div>
+      <div id="r-identite-installer" class="bloc cache">
+        <p class="tres-discret">LoRA « Krea 2 Identity Edit » v1.2 (conradlocke, licence Krea 2 Community) : 1,8 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Krea2Edit livrée et vérifiée avec Studio.</p>
+        <p class="tres-discret"><b>Uniquement sur des personnages fictifs ou des personnes d'accord.</b></p>
+        <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="r-identite-liste" checked><span></span></label></div>
+        <button class="bouton principal plein" type="button" id="r-identite-installer-btn">Installer Krea 2 Identity Edit</button>
+      </div>
+    </div>
     </div>
     <div class="champ prompt">
       <div class="ligne-champ"><label for="r-prompt" id="r-prompt-label">Ce qu'il faut obtenir</label><button class="lien" type="button" id="r-decrire">Décrire l'image</button></div>
@@ -460,9 +472,16 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
     </div>
     <h3 id="r-ref-titre">Image de référence (facultatif)</h3>
     <div id="r-ref"></div>
+    <div id="r-force-bloc">
     <h3>Force de la modification <output id="r-force-val" class="tres-discret"></output></h3>
     <input type="range" id="r-force" min="0.2" max="1" step="0.05" class="plein-largeur" aria-label="Force">
     <p class="tres-discret" id="r-force-aide">Faible : retouche légère qui garde l'original. Forte : la zone est entièrement recréée.</p>
+    </div>
+    <div id="r-ressemblance-bloc" class="cache">
+    <h3>Ressemblance <output id="r-ressemblance-val" class="tres-discret"></output></h3>
+    <input type="range" id="r-ressemblance" min="0" max="10" step="0.5" class="plein-largeur" aria-label="Ressemblance">
+    <p class="tres-discret">4 (conseillé) : visage et silhouette bien gardés. 1 : plus de liberté. Au-delà de 10, les suppressions et remplacements échouent.</p>
+    </div>
     <h3>LoRA</h3>
     <div id="r-loras"></div>
     <select id="r-ajout-lora" aria-label="Ajouter un LoRA"></select>
@@ -475,6 +494,8 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
         <label class="champ" id="r-scheduler-champ"><span>Scheduler</span><select id="r-scheduler"></select></label>
         <label class="champ" id="r-masque-ext"><span>Agrandir le masque (px)</span><input type="number" id="r-extension" inputmode="numeric" min="0" max="64"></label>
         <label class="champ" id="r-masque-flou"><span>Adoucir le bord (px)</span><input type="number" id="r-flou" inputmode="numeric" min="0" max="31"></label>
+        <label class="champ cache" id="r-grounding-champ"><span>Vision de la consigne</span><select id="r-grounding">
+          <option value="512">512 px (suit mieux la consigne)</option><option value="640">640 px</option><option value="768">768 px (conseillé)</option><option value="1024">1024 px (garde mieux la ressemblance)</option></select></label>
       </div>
       <div class="interrupteur">
         <div><b>Graine fixe</b><small>Même graine = même résultat avec les mêmes réglages</small></div>
@@ -694,7 +715,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-4e508228a0e6.tgz", sha: "4e508228a0e607775d34c0c4b940b891b5f12622682083f1ea058e63836d7320"};
+const PAQUET = {fichier: "pod-8ad0b8f036a3.tgz", sha: "8ad0b8f036a32aaf167c3e7edfb709fb070116d22c4e30e4044e463626481f1e"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
@@ -1065,7 +1086,7 @@ function traiterTravaux() {
     if (t.liste && t.resultat && t.resultat.liens) { for (const l of t.resultat.liens) changeListe = ajouterListe(l) || changeListe; }
     if (t.type === "image" && t.resultat && t.resultat.formulaire) { A.formulaireImage = t.resultat.formulaire; rendreAnalyse(); }
     if (t.type === "description" && t.id === A.descTravail) { A.descTravail = null; $("d-texte").value = t.resultat.texte; $("d-resultat").classList.remove("cache"); }
-    if (t.type === "officiel") toast("Qwen Image 2.1 est installé.");
+    if (t.type === "officiel") toast((t.titre || "Le modèle") + " est installé.");
     A.travauxVus.add(t.id);
   }
   for (const t of A.etat.travaux) {
@@ -1076,7 +1097,7 @@ function traiterTravaux() {
       else if (t.type === "generation") toast("Génération : " + t.erreur, true);
       else if (t.type === "description") { if (t.id === A.descTravail) A.descTravail = null; toast("Description : " + t.erreur, true); }
       else if (t.type === "outil") toast("Outil de description : " + t.erreur, true);
-      else if (t.type === "officiel") toast("Qwen Image 2.1 : " + t.erreur, true);
+      else if (t.type === "officiel") toast((t.titre || "Installation") + " : " + t.erreur, true);
     }
   }
   if (changeListe) { sauver(); rendreListe(); }
@@ -1382,7 +1403,7 @@ let sauverFormMinuteur;
 function sauverForm() { clearTimeout(sauverFormMinuteur); sauverFormMinuteur = setTimeout(() => { S.form = F; sauver(); }, 400); }
 
 function modeleCourant() { return A.modeles && A.modeles.principaux.find((m) => m.rel === F.modele) || null; }
-function lorasCompatibles(m) { return A.modeles ? A.modeles.loras.filter((l) => !l.sda && !l.turbo && !l.reference && (!m || !l.famille || l.famille === m.famille)) : []; }
+function lorasCompatibles(m) { return A.modeles ? A.modeles.loras.filter((l) => !l.sda && !l.turbo && !l.reference && !l.identite && (!m || !l.famille || l.famille === m.famille)) : []; }
 function loraSda() { return A.modeles && A.modeles.loras.find((l) => l.sda) || null; }
 
 function appliquerDefauts(m) {
@@ -1909,7 +1930,7 @@ function choisirDansGalerie() {
 // Réglages propres à la retouche (indépendants de Créer) ; null = valeur conseillée du modèle choisi.
 const RT_DEFAUTS = {source: null, references: [], prompt: "", negatif: "", modele: null, force: null, tout: false, proteger: true,
   rapide: false, loras: [], nombre: 1, extension: 8, flou: 9, steps: null, cfg: null, sampler: null, scheduler: null,
-  grainefixe: false, graine: null, outil: "peindre", taille: 48, workflow: null};
+  grainefixe: false, graine: null, outil: "peindre", taille: 48, workflow: null, identite: false, ressemblance: 4, grounding: 768};
 const RT = Object.assign({}, RT_DEFAUTS, S.retouche || {}, {source: null, references: []});
 if (!Array.isArray(RT.loras)) RT.loras = [];      // ancienne version : simple interrupteur « Appliquer mes LoRA »
 delete RT.reference;
@@ -1921,14 +1942,24 @@ function modelesRetouche() { return A.modeles ? A.modeles.principaux.filter((m) 
 function modeleRT() { return modelesRetouche().find((m) => m.rel === RT.modele) || null; }
 function loraReference() { return A.modeles && A.modeles.loras.find((l) => l.reference) || null; }
 function forceDefaut(m) { return m && m.famille === "qwen21" ? 1 : 0.85; }
+// Krea 2 Identity Edit : mode actif seulement avec un modèle Krea 2, le LoRA installé et sans workflow personnel
+function modeIdentite(m = modeleRT()) { return !!(RT.identite && m && m.famille === "krea2" && A.modeles && A.modeles.identite && !wfCourant("r")); }
+function defautsRT(m) {   // réglages conseillés du modèle ; en Identity Edit, ceux de l'auteur (Turbo 10 étapes CFG 1, Raw 30 / CFG 3)
+  const d = m && m.defauts; if (!d) return null;
+  if (!modeIdentite(m)) return d;
+  const turbo = d.variante === "Turbo";
+  return Object.assign({}, d, {steps: turbo ? 10 : 30, cfg: turbo ? 1 : 3, negatif: false});
+}
+function identiteEnCours() { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "identite" && (t.etat === "attente" || t.etat === "encours")); }
 function maxReferences(m) {
   if (!m) return 0;
+  if (modeIdentite(m)) return 1;
   if (m.famille === "qwen21") return 4;
   if (m.famille === "flux2" || (m.famille === "krea2" && loraReference())) return 1;
   return 0;
 }
 function maxReferencesRT() { const w = wfCourant("r"); return w ? Math.max(0, w.nb_images - 1) : maxReferences(modeleRT()); }
-function installQwenEnCours() { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && (t.etat === "attente" || t.etat === "encours")); }
+function installQwenEnCours() { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi !== "identite" && (t.etat === "attente" || t.etat === "encours")); }
 
 function rendreRetoucheOptions() {
   const sel = $("r-modele"); sel.textContent = "";
@@ -1958,7 +1989,7 @@ function choisirModeleRT(rel) {
 }
 
 function rendreRetouche() {
-  const m = modeleRT(), d = m && m.defauts, qwen = !!(m && m.famille === "qwen21");
+  const m = modeleRT(), d = defautsRT(m), qwen = !!(m && m.famille === "qwen21"), ident = modeIdentite(m);
   $("r-vide").classList.toggle("cache", !!RT.source);
   $("r-editeur").classList.toggle("cache", !RT.source);
   $("r-toile").classList.toggle("tout", !!RT.tout);
@@ -1970,13 +2001,30 @@ function rendreRetouche() {
   $("r-qwen").classList.toggle("cache", !A.modeles || !!A.modeles.qwen21);
   $("r-qwen-installer").disabled = !!inst;
   $("r-qwen-installer").textContent = inst ? "Installation en cours… " + (inst.progres ? `${inst.progres.fait}${inst.progres.total ? " / " + inst.progres.total : ""} Go` : "") : "Installer Qwen Image 2.1";
+  // Krea 2 Identity Edit
+  const krea = !!(m && m.famille === "krea2") && !wfCourant("r"), instId = identiteEnCours();
+  $("r-identite-bloc").classList.toggle("cache", !krea);
+  $("r-identite").checked = !!RT.identite;
+  $("r-identite").disabled = !(A.modeles && A.modeles.identite);
+  $("r-identite-installer").classList.toggle("cache", !krea || !A.modeles || !!A.modeles.identite);
+  $("r-identite-installer-btn").disabled = !!instId;
+  $("r-identite-installer-btn").textContent = instId ? "Installation en cours…" + (instId.progres ? ` ${instId.progres.fait}${instId.progres.total ? " / " + instId.progres.total : ""} Go` : "") : "Installer Krea 2 Identity Edit";
+  $("r-force-bloc").classList.toggle("cache", ident);
+  $("r-ressemblance-bloc").classList.toggle("cache", !ident);
+  $("r-ressemblance").value = RT.ressemblance ?? 4; $("r-ressemblance-val").textContent = String(RT.ressemblance ?? 4);
+  $("r-grounding-champ").classList.toggle("cache", !ident);
+  $("r-grounding").value = String(RT.grounding || 768);
   // consigne
-  $("r-prompt-label").textContent = qwen ? "Consigne de retouche" : "Ce qu'il faut obtenir";
+  $("r-prompt-label").textContent = qwen || ident ? "Consigne de retouche" : "Ce qu'il faut obtenir";
   $("r-prompt").placeholder = qwen ? (RT.tout ? "Ex. : passe la scène de nuit, sous la pluie" : "Ex. : remplace sa veste par un manteau rouge")
     : "Décris le résultat voulu dans la zone peinte…";
   $("r-prompt-aide").textContent = qwen ? "Qwen suit des consignes (« ajoute… », « remplace… », « change… »)." +
     (RT.references.length ? ` Désigne les références par ${RT.references.map((_, i) => `<image${i + 2}>`).join(", ")}, l'image à modifier par <image1>.` : "")
     : "Variantes : écris {rouge|bleu} et chaque image en tire une au hasard.";
+  if (ident) {
+    $("r-prompt").placeholder = RT.references.length ? "Ex. : Place this person at the cafe table, holding a coffee." : "Ex. : Change her outfit to a red raincoat.";
+    $("r-prompt-aide").textContent = "Une consigne simple, de préférence en anglais. Visage trop « générique » ? Ajoute : « Preserve the exact facial identity » et décris ses traits. Zone peinte facultative : si tu peins, seule cette zone change.";
+  }
   if ($("r-prompt").value !== RT.prompt) $("r-prompt").value = RT.prompt;
   if ($("r-negatif").value !== RT.negatif) $("r-negatif").value = RT.negatif;
   $("r-negatif-champ").classList.toggle("cache", !(d && d.negatif));
@@ -2007,7 +2055,8 @@ function rendreRetouche() {
   $("r-graine-fixe").checked = !!RT.grainefixe; $("r-graine").classList.toggle("cache", !RT.grainefixe);
   if (RT.graine !== null && $("r-graine").value !== String(RT.graine)) $("r-graine").value = RT.graine;
   $("r-nombre").textContent = RT.nombre;
-  $("r-modele-aide").textContent = !m ? "" : qwen ? "Qwen Image 2.1 : retouche par consigne, jusqu'à 4 images de référence." :
+  $("r-modele-aide").textContent = !m ? "" : ident ? "Krea 2 Identity Edit : l'image est recréée selon ta consigne en gardant la ressemblance. Turbo pour la plupart des retouches ; Raw (CFG 3) pour supprimer quelque chose." :
+    qwen ? "Qwen Image 2.1 : retouche par consigne, jusqu'à 4 images de référence." :
     m.famille === "flux2" ? "Flux.2 Klein : fidèle à l'image d'origine, accepte une référence." :
     m.famille === "krea2" ? "Krea 2 : une référence possible avec son LoRA « Style Reference »." : "Retouche classique (inpainting), sans référence.";
   rendreLorasRT();
@@ -2018,11 +2067,12 @@ function rendreRetouche() {
 function rendreReferences(m) {
   const box = $("r-ref"); box.textContent = "";
   const max = maxReferences(m), fam = m && m.famille;
-  $("r-ref-titre").textContent = max > 1 ? `Images de référence (facultatif, jusqu'à ${max})` : "Image de référence (facultatif)";
+  const ident = modeIdentite(m);
+  $("r-ref-titre").textContent = ident ? "Personne à placer dans la scène (facultatif)" : max > 1 ? `Images de référence (facultatif, jusqu'à ${max})` : "Image de référence (facultatif)";
   if (max) {
     const liste = el("div", {class: "ref-liste"});
     RT.references.forEach((r, i) => liste.append(el("div", {class: "ref"}, el("img", {src: r.url, alt: "Référence"}),
-      el("div", {}, el("p", {class: "tres-discret", texte: fam === "qwen21" ? `<image${i + 2}> dans ta consigne.` : fam === "krea2" ? "Krea 2 en reprend surtout le style." : "Klein s'en inspire (personnage, tenue, objet, style) selon ton texte."}),
+      el("div", {}, el("p", {class: "tres-discret", texte: ident ? "Ta photo est la scène ; cette image est la personne à y placer." : fam === "qwen21" ? `<image${i + 2}> dans ta consigne.` : fam === "krea2" ? "Krea 2 en reprend surtout le style." : "Klein s'en inspire (personnage, tenue, objet, style) selon ton texte."}),
         el("button", {class: "bouton petit", type: "button", texte: "Retirer", onclick: () => { RT.references.splice(i, 1); rendreRetouche(); }})))));
     box.append(liste);
     if (RT.references.length < max) box.append(el("div", {class: "rangee", style: "margin-top:8px"},
@@ -2130,8 +2180,9 @@ function demandeRetouche() {
   if (!m) { toast("Choisis un modèle.", true); return null; }
   const prompt = RT.prompt.trim();
   if (!prompt) { toast(m.famille === "qwen21" ? "Écris ta consigne de retouche." : "Décris ce que tu veux obtenir.", true); $("r-prompt").focus(); return null; }
-  if (!RT.tout && masqueVide()) { toast("Peins la zone à modifier, ou active « Modifier toute l'image ».", true); return null; }
-  const d = m.defauts;
+  const ident = modeIdentite(m);
+  if (!ident && !RT.tout && masqueVide()) { toast("Peins la zone à modifier, ou active « Modifier toute l'image ».", true); return null; }
+  const d = defautsRT(m);
   const base = RT.grainefixe && Number.isFinite(RT.graine) ? RT.graine : nouvelleGraine();
   const graines = [], prompts = [];
   for (let i = 0; i < RT.nombre; i++) { graines.push(base + i); prompts.push(variantes(prompt, prng(base + i))); }
@@ -2139,7 +2190,9 @@ function demandeRetouche() {
     sampler: RT.sampler ?? d.sampler, scheduler: RT.scheduler ?? (d.scheduler || "simple"), clip: d.clip || 1,
     loras: RT.loras.filter((x) => lorasCompatibles(m).some((l) => l.rel === x.rel)), force: RT.force ?? forceDefaut(m),
     extension: RT.extension, flou: RT.flou, proteger: RT.proteger !== false, rapide: !!RT.rapide,
-    source: RT.source.id, references: RT.references.map((r) => r.id), masque: RT.tout ? null : masquePNG()};
+    source: RT.source.id, references: RT.references.map((r) => r.id),
+    masque: RT.tout || (ident && masqueVide()) ? null : masquePNG()};
+  if (ident) Object.assign(reglages, {identite: true, ressemblance: RT.ressemblance ?? 4, grounding: RT.grounding || 768, force: 1, negatif: ""});
   return {reglages, prompts, graines};
 }
 function masquePlein() {
@@ -2158,6 +2211,11 @@ async function retoucher() {
     rendreGenerer(); boucle();
   } catch (e) { toast(e.message, true); }
   finally { $("btn-retoucher").disabled = false; rendreGenerer(); }
+}
+async function installerIdentite(liste) {
+  if (!(await confirmer("Installer Krea 2 Identity Edit ?", "LoRA communautaire de 1,8 Go téléchargé depuis Hugging Face (conradlocke, version 1.2 figée, vérifiée par son empreinte), plus l'encodeur et le VAE officiels de Krea 2 s'ils manquent. À n'utiliser que sur des personnages fictifs ou des personnes d'accord.", "Installer", false))) return;
+  try { await A.canal.appel("installer_identite", {liste, jetons: jetons()}); toast("Installation de Krea 2 Identity Edit lancée."); boucle(); }
+  catch (e) { toast(e.message, true); }
 }
 async function installerQwen(liste) {
   if (!(await confirmer("Installer Qwen Image 2.1 ?", "Environ 18 Go téléchargés depuis Hugging Face sur le disque du Pod : fichiers officiels Comfy-Org, chacun vérifié par son empreinte. Compte une dizaine de minutes.", "Installer", false))) return;
@@ -2562,6 +2620,11 @@ function brancher() {
   $("r-defauts").onclick = () => { const r = RT.modele; RT.extension = 8; RT.flou = 9; choisirModeleRT(r); RT.rapide = false; rendreRetouche(); toast("Réglages du modèle rétablis."); };
   $("r-prompt").oninput = (e) => { RT.prompt = e.target.value; ajusterHauteur(e.target); sauverRT(); };
   $("r-negatif").oninput = (e) => { RT.negatif = e.target.value; sauverRT(); };
+  $("r-identite").onchange = (e) => { RT.identite = e.target.checked; RT.steps = RT.cfg = null;
+    RT.references = RT.references.slice(0, maxReferencesRT()); sauverRT(); rendreRetouche(); };
+  $("r-ressemblance").oninput = (e) => { RT.ressemblance = parseFloat(e.target.value); $("r-ressemblance-val").textContent = String(RT.ressemblance); sauverRT(); };
+  $("r-grounding").onchange = (e) => { RT.grounding = parseInt(e.target.value, 10) || 768; sauverRT(); };
+  $("r-identite-installer-btn").onclick = () => installerIdentite($("r-identite-liste").checked);
   $("r-force").oninput = (e) => { RT.force = parseFloat(e.target.value); $("r-force-val").textContent = Math.round(RT.force * 100) + " %"; sauverRT(); };
   for (const [id, k, mini, maxi] of [["r-steps", "steps", 1, 150], ["r-cfg", "cfg", 0, 30], ["r-extension", "extension", 0, 64], ["r-flou", "flou", 0, 31]])
     $(id).onchange = (e) => { let v = parseFloat(e.target.value); if (!Number.isFinite(v)) v = null; else v = Math.max(mini, Math.min(maxi, k === "cfg" ? v : Math.round(v))); RT[k] = v ?? (k === "extension" ? 8 : k === "flou" ? 9 : null); sauverRT(); rendreRetouche(); };
