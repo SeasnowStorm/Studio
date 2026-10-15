@@ -17,12 +17,12 @@
 <style>
 /* Police Manrope (SIL Open Font License, voir manrope-OFL.txt) servie par le site lui-même : aucun appel à Google */
 @font-face{font-family:"Manrope";src:url("manrope.woff") format("woff");font-weight:200 800;font-style:normal;font-display:swap}
-/* Palette « Encre et corail » */
+/* Palette « Encre et turquoise » */
 :root{
   --fond:#0D1117; --fond-scene:#0A0E14; --surface:#141B26; --surface-2:#1C2533; --trait:#2A3546; --trait-doux:#1F2733;
   --texte:#E9EDF3; --texte-2:#A3ADBC; --texte-3:#7D8898;
-  --lumiere:#FF8A65; --lumiere-fonce:#E36E4B; --sur-lumiere:#2A0F06;
-  --ok:#7FD1B0; --danger:#F2626B;
+  --lumiere:#3CCBC4; --lumiere-fonce:#2BA8A1; --sur-lumiere:#032321;
+  --ok:#A3DB7A; --danger:#F2626B;
   --r-petit:8px; --r:12px; --r-grand:16px;
   --haut:env(safe-area-inset-top); --bas:env(safe-area-inset-bottom);
   color-scheme:dark;
@@ -328,6 +328,18 @@ nav.onglets button:active{transform:scale(.94)}
 .feuille .titre .croix,.visionneuse .haut .croix{width:40px;height:40px;border-radius:50%;border:1px solid var(--trait);
   background:var(--surface-2);color:var(--texte);font-size:15px;display:grid;place-items:center;flex:none}
 .visionneuse .haut{background:var(--fond-scene);border-bottom:1px solid var(--trait-doux)}
+.feuille .titre .retour{flex:none;height:36px;padding:0 12px;margin-left:-4px;border-radius:999px;border:1px solid var(--trait);
+  background:var(--surface-2);color:var(--texte);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.feuille .titre .retour + h2{margin-left:10px;margin-right:auto}
+.feuille .titre .retour:active{transform:scale(.95);filter:brightness(.82)}
+#feuille-sortie pre.journal{max-height:none}
+@media (min-width:960px){
+  #feuille-reglages{width:min(1120px,94vw)}
+  #feuille-reglages .interieur{max-width:none}
+  .reglages-grille{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:36px;align-items:start}
+  #feuille-session,#feuille-sortie,#feuille-comfy{width:min(760px,92vw)}
+  #feuille-session .interieur,#feuille-sortie .interieur,#feuille-comfy .interieur{max-width:none}
+}
 dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .toast{background:var(--surface-2)}
 
@@ -343,25 +355,69 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   background:linear-gradient(110deg,var(--fond-scene) 30%,var(--surface) 50%,var(--fond-scene) 70%);background-size:300% 100%;animation:attente 1.6s linear infinite}
 .zone-toile .depot{margin-top:0}
 .toile{width:fit-content;max-width:100%;margin:0 auto;background:var(--fond-scene)}
-.toile img{width:auto;max-width:100%;height:auto;max-height:var(--h-toile,34dvh)}
+.toile img{display:block;width:auto;max-width:100%;height:auto;max-height:var(--h-toile,34dvh)}
+.toile img[style*="width"]{max-height:none}
 .panneau > :first-child{margin-top:8px}
 .panneau h3:first-child{margin-top:12px}
+
+/* lot ajusté par ajusterLots() : chaque image aussi grande que possible selon sa forme */
+.res .recents{justify-content:center;align-content:center}
+.res .recents.ajuste > *{aspect-ratio:auto;width:100%;height:100%;min-height:0}
+.titre-plus{display:none}
+.puces-rapides,.emplacement-prompt{display:none}
+.bascule-res{flex:none;margin-bottom:10px}
+.bascule-res button{white-space:nowrap;padding-inline:16px}
+.res[data-affichage=resultats] .zone-toile,.res[data-affichage=image] #r-recents-bloc{display:none!important}
+#r-recents-vide{flex:1;display:grid;place-items:center}
+/* références : petites vignettes dans le panneau de droite */
+.ref-mini-grille{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 8px}
+.ref-mini{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--trait);background:var(--fond-scene)}
+.ref-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.ref-mini .etiquette{position:absolute;left:4px;bottom:4px;font-size:10.5px;padding:1px 5px;border-radius:6px;background:rgba(13,17,23,.85);color:var(--lumiere)}
+.ref-mini .croix{position:absolute;right:3px;top:3px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(13,17,23,.85);color:var(--texte);font-size:11px;display:grid;place-items:center;padding:0}
+.ref-ajout{aspect-ratio:1;border-radius:10px;border:1px dashed var(--trait);background:transparent;color:var(--texte-2);font-size:12px;padding:4px}
+.ref-ajout:active{transform:scale(.96);filter:brightness(.82)}
 
 @media (max-width:959.98px){
   body.atelier{height:100dvh;overflow:hidden;display:flex;flex-direction:column}
   body.atelier header{position:relative;flex:none}
-  body.atelier main{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 12px calc(var(--bas) + 70px)}
-  body.atelier section.vue.atelier.active{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
-  .atelier .res{flex:none;max-height:50%;overflow:auto;--h-toile:30dvh}
-  .atelier .reglages{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--surface);
-    border:1px solid var(--trait);border-radius:var(--r-grand);padding:0 14px 14px}
+  body.atelier main{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 8px calc(var(--bas) + 70px)}
+  body.atelier section.vue.atelier.active{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+  .atelier .res{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+  #f-recents-vide{flex:1;display:grid;place-items:center;margin:0}
+  #f-recents-bloc,#r-recents-bloc{flex:1;min-height:0;display:flex;flex-direction:column}
+  #f-recents,#r-recents{flex:1;min-height:0}
+  #vue-retoucher .zone-toile{flex:1;min-height:0;overflow:auto}
+  .atelier .pinceau{margin-top:6px;gap:6px}
+  /* « Plus de réglages » : fenêtre du bas, avec sa croix, qui défile seule */
+  .atelier .reglages{display:none;position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:84dvh;overflow:auto;
+    -webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--trait);border-bottom:0;
+    border-radius:var(--r-grand) var(--r-grand) 0 0;padding:0 16px calc(var(--bas) + 24px);box-shadow:0 -10px 40px rgba(0,0,0,.45)}
+  .atelier.plus-ouvert .reglages{display:block}
+  .titre-plus{display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3;background:var(--surface);
+    margin:0 -16px 4px;padding:8px 10px 8px 16px;border-bottom:1px solid var(--trait)}
+  .titre-plus h2{margin:0;font-size:16px}
+  .titre-plus .croix{width:40px;height:40px;border-radius:50%;border:1px solid var(--trait);background:var(--surface-2);color:var(--texte);font-size:15px;display:grid;place-items:center;flex:none}
   .atelier .panneau.droite{border-top:1px solid var(--trait);margin-top:12px}
+  .ref-mini-grille{grid-template-columns:repeat(4,minmax(0,1fr))}
+  /* barre de saisie du bas : réglages rapides, prompt, bouton */
+  body.atelier main,body.atelier section.vue.atelier.active,.atelier .res,.composeur,.puces-rapides,.emplacement-prompt{min-width:0;max-width:100%}
+  .composeur{flex:none;background:var(--surface);border:1px solid var(--trait);border-radius:var(--r-grand);padding:8px;display:flex;flex-direction:column;gap:8px}
+  .puces-rapides{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -2px;padding:0 2px}
+  .puces-rapides::-webkit-scrollbar{display:none}
+  .puce-rapide{flex:none;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--trait);background:var(--surface-2);color:var(--texte);font-size:12.5px;font-weight:400;white-space:nowrap}
+  .puce-rapide:active{transform:scale(.95);filter:brightness(.82)}
+  .emplacement-prompt{display:block}
+  .emplacement-prompt .champ.prompt{margin:0}
+  .emplacement-prompt .ligne-champ{display:none}
+  .emplacement-prompt textarea{min-height:52px;height:52px;max-height:110px;padding:8px 11px;font-size:16px}
+  .emplacement-prompt .aide-variantes{display:none}
   .atelier .action{flex:none;position:static;margin:0;padding:0;background:none}
-  .atelier .pinceau{margin-top:8px;gap:8px}
-  #vue-retoucher .res .recents{grid-template-columns:repeat(4,minmax(0,1fr))}
-  #vue-retoucher .res{max-height:60%;--h-toile:26dvh}
+  .atelier .action .generer,.atelier .action .stop{min-height:46px;height:46px}
+  .bascule-res{margin-bottom:6px}
 }
 @media (min-width:960px){
+  .composeur{display:contents}
   body.atelier{height:100vh;overflow:hidden}
   body.atelier main{max-width:none;height:calc(100vh - 68px);padding:4px 16px 16px}
   body.atelier section.vue.atelier.active{display:grid;height:100%;grid-template-columns:340px minmax(0,1fr) 320px;
@@ -374,19 +430,15 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .atelier .res{grid-area:r;background:var(--fond-scene);border:1px solid var(--trait-doux);border-radius:var(--r-grand);padding:14px;
     display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
   #vue-creer .res .vide{flex:1;display:grid;place-items:center}
-  #f-recents-bloc{flex:1;min-height:0}
-  #f-recents{height:100%;grid-auto-rows:minmax(0,1fr)}
-  #f-recents[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
-  #f-recents[data-n="3"],#f-recents[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
-  #f-recents[data-n="5"],#f-recents[data-n="6"]{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
-  #f-recents[data-n="7"],#f-recents[data-n="8"]{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
-  #f-recents .vignette,#f-recents .case-attente{aspect-ratio:auto;height:100%;min-height:0}
-  #vue-retoucher .res{--h-toile:calc(100vh - 430px)}
+  #f-recents-bloc{flex:1;min-height:0;display:flex;flex-direction:column}
+  #f-recents{flex:1;min-height:0}
+  #vue-retoucher .res{--h-toile:calc(100vh - 360px)}
   #vue-retoucher .zone-toile{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
   #r-vide{margin-block:auto}
-  #r-recents-bloc{flex:none;margin-top:12px}
-  #r-recents{grid-template-columns:repeat(4,minmax(0,1fr))}
-  #r-recents .vignette,#r-recents .case-attente{aspect-ratio:auto;height:150px}
+  #r-recents-bloc{flex:1;min-height:0;display:flex;flex-direction:column}
+  #r-recents{flex:1;min-height:0;height:auto}
+  .bascule-res{align-self:flex-start}
+  .ref-mini-grille{grid-template-columns:repeat(3,minmax(0,1fr))}
   .atelier .pinceau{flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px}
   .atelier .pinceau .segments{flex:0 0 200px}
   .atelier .pinceau .curseur{flex:1;min-width:160px;margin:0}
@@ -407,7 +459,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   <!-- ================= ACCUEIL (aucune session) ================= -->
   <section class="vue" id="vue-accueil">
     <div id="accueil-config">
-      <p class="accueil-titre">Ta chambre noire est fermée.</p>
+      <p class="accueil-titre">Aucune session en cours.</p>
       <p class="discret">Déploie un Pod sur Runpod avec ton modèle Studio, puis connecte-le ici. Rien de privé n'est écrit sur ses disques, et tout passe chiffré de bout en bout entre cet appareil et le Pod.</p>
       <div id="accueil-installer" class="bloc cache">
         <p>Installe d'abord l'application : bouton Partager de Safari, puis « Sur l'écran d'accueil ». Ouvre-la ensuite depuis son icône : ce que tu saisis ici dans Safari ne la suit pas.</p>
@@ -461,13 +513,15 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <p class="vide" id="f-recents-vide">Les images du lot que tu lances apparaîtront ici.</p>
     <div id="f-recents-bloc" class="cache"><div class="recents" id="f-recents"></div></div>
    </div>
-   <div class="reglages">
+   <div class="reglages" id="f-reglages">
+    <div class="titre-plus"><h2>Plus de réglages</h2><button class="croix" type="button" data-fermer-plus aria-label="Fermer">✕</button></div>
     <div class="panneau gauche">
     <label class="champ"><span>Workflow</span><select id="f-workflow"></select></label>
     <div id="f-std-haut">
     <label class="champ"><span>Modèle</span><select id="f-modele"></select></label>
     <p class="tres-discret" id="f-modele-aide"></p>
     </div>
+    <span class="maison-prompt" id="f-prompt-maison" hidden></span>
     <div class="champ prompt">
       <div class="ligne-champ"><label for="f-prompt">Prompt</label><button class="lien" type="button" id="f-decrire">Prompt depuis une image</button></div>
       <textarea id="f-prompt" rows="5" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Décris l'image…"></textarea></div>
@@ -545,15 +599,22 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <p class="tres-discret cache" id="f-droite-wf">Avec un workflow personnel, le modèle, les LoRA et les nœuds se règlent dans ComfyUI.</p>
     </div>
    </div>
+    <div class="composeur" id="f-composeur">
+     <div class="puces-rapides" id="f-rapides" role="group" aria-label="Réglages rapides"></div>
+     <div class="emplacement-prompt" id="f-prompt-tel"></div>
     <div class="action">
       <button class="generer" type="button" id="btn-generer"><i class="avance-gen" id="gen-avance"></i><span id="gen-texte">Générer</span></button>
       <button class="stop cache" type="button" id="btn-stop">Arrêter</button>
+    </div>
     </div>
   </section>
 
   <!-- ================= RETOUCHER ================= -->
   <section class="vue atelier" id="vue-retoucher">
    <div class="res" id="r-res">
+    <div class="segments bascule-res cache" id="r-bascule" role="group" aria-label="Affichage">
+      <button type="button" data-res="image">Image à retoucher</button><button type="button" data-res="resultats" id="r-bascule-res">Résultats</button>
+    </div>
     <div class="zone-toile">
     <div id="r-vide" class="depot">
       <p><b>Choisis l'image à modifier</b></p>
@@ -576,8 +637,10 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     </div>
     </div>
     <div id="r-recents-bloc" class="cache"><div class="res-tete"><span>Résultats du lot</span><span class="tres-discret" id="r-lot-info"></span></div><div class="recents" id="r-recents"></div></div>
+    <p class="vide cache" id="r-recents-vide">Les résultats du lot apparaîtront ici.</p>
    </div>
-   <div class="reglages">
+   <div class="reglages" id="r-reglages">
+    <div class="titre-plus"><h2>Plus de réglages</h2><button class="croix" type="button" data-fermer-plus aria-label="Fermer">✕</button></div>
     <div class="panneau gauche">
     <div id="r-qwen" class="bloc cache">
       <p><b>Qwen Image 2.1, le modèle de retouche conseillé</b></p>
@@ -603,6 +666,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
       </div>
     </div>
     </div>
+    <span class="maison-prompt" id="r-prompt-maison" hidden></span>
     <div class="champ prompt">
       <div class="ligne-champ"><label for="r-prompt" id="r-prompt-label">Ce qu'il faut obtenir</label><button class="lien" type="button" id="r-decrire">Décrire l'image</button></div>
       <textarea id="r-prompt" rows="4" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Décris le résultat voulu dans la zone peinte…"></textarea>
@@ -619,8 +683,6 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
       <div><b>Mode rapide</b><small>Qwen Image 2.1 Turbo : 8 étapes au lieu de 30</small></div>
       <label class="bascule"><input type="checkbox" id="r-rapide"><span></span></label>
     </div>
-    <h3 id="r-ref-titre">Image de référence (facultatif)</h3>
-    <div id="r-ref"></div>
     <div id="r-force-bloc">
     <h3>Force de la modification <output id="r-force-val" class="tres-discret"></output></h3>
     <input type="range" id="r-force" min="0.2" max="1" step="0.05" class="plein-largeur" aria-label="Force">
@@ -638,6 +700,8 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     </div>
     <div class="panneau droite">
     <div id="r-std-droite">
+    <h3 id="r-ref-titre">Image de référence (facultatif)</h3>
+    <div id="r-ref"></div>
     <h3>LoRA</h3>
     <div id="r-loras"></div>
     <select id="r-ajout-lora" aria-label="Ajouter un LoRA"></select>
@@ -669,9 +733,13 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <p class="tres-discret cache" id="r-droite-wf">Avec un workflow personnel, le modèle, les LoRA et les nœuds se règlent dans ComfyUI.</p>
     </div>
    </div>
+    <div class="composeur" id="r-composeur">
+     <div class="puces-rapides" id="r-rapides" role="group" aria-label="Réglages rapides"></div>
+     <div class="emplacement-prompt" id="r-prompt-tel"></div>
     <div class="action">
       <button class="generer" type="button" id="btn-retoucher"><i class="avance-gen" id="ret-avance"></i><span id="ret-texte">Retoucher</span></button>
       <button class="stop cache" type="button" id="btn-stop-r">Arrêter</button>
+    </div>
     </div>
   </section>
 
@@ -730,7 +798,6 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <p id="s-confidentialite" class="discret"></p>
     <p class="erreur-texte cache" id="s-version"></p>
     <div class="rangee rangee-3" style="margin-top:12px"><button class="bouton" type="button" id="btn-infos">Infos du pod</button><button class="bouton" type="button" id="btn-audit">Contrôler le disque</button><button class="bouton" type="button" id="btn-journal">Journal</button></div>
-    <div id="s-sortie"></div>
     <h3>Appareils autorisés</h3>
     <ul class="liste-simple" id="s-appareils"></ul>
     <p class="tres-discret">Pour ajouter un appareil : connecte-le à ce Pod, puis compare le code qu'il affiche avec celui qui s'affichera ici.</p>
@@ -741,11 +808,21 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   </div>
 </div>
 
+<!-- feuille Infos / Journal / Contrôle du disque (ouverte depuis Session) -->
+<div class="feuille cache" id="feuille-sortie" role="dialog" aria-label="Détails du Pod">
+  <div class="interieur">
+    <div class="poignee"></div>
+    <div class="titre"><h2 id="so-titre">Détails</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
+    <div id="s-sortie"></div>
+  </div>
+</div>
+
 <!-- feuille Réglages -->
 <div class="feuille cache" id="feuille-reglages" role="dialog" aria-label="Réglages">
   <div class="interieur">
     <div class="poignee"></div>
     <div class="titre"><h2>Réglages</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
+    <div class="reglages-grille"><section>
     <h3>Ton modèle Runpod (à créer une seule fois)</h3>
     <p class="tres-discret">Sur runpod.io : Templates → New Template, type Pod. Container Disk 40 Go, Volume Disk 150 Go monté sur /workspace. Les mêmes valeurs servent sur tous tes appareils.</p>
     <div id="manuel-valeurs"></div>
@@ -754,6 +831,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <label class="champ"><span>Lien de déploiement de ton modèle</span>
       <input type="text" id="lien-modele" placeholder="https://console.runpod.io/deploy?template=…" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="url"></label>
     <p class="tres-discret">Sur Runpod, le menu de ton modèle permet de copier son lien de déploiement : colle-le ici et « Déployer » ouvrira directement ton modèle.</p>
+    </section><section>
     <h3>Téléchargement des modèles</h3>
     <p class="tres-discret">Ces clés restent sur cet appareil. Elles ne partent que vers ton Pod, chiffrées, pour chaque téléchargement, et n'y restent qu'en mémoire vive.</p>
     <label class="champ"><span>Clé API Civitai <em class="tres-discret" id="etat-cle-civitai"></em></span>
@@ -763,6 +841,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <button class="bouton principal plein" type="button" id="btn-cles">Enregistrer</button>
     <button class="bouton danger plein" type="button" id="btn-oublier" style="margin-top:22px">Tout oublier sur cet appareil</button>
     <p class="tres-discret" style="margin-top:14px">Studio — version <span id="version-app"></span></p>
+    </section></div>
   </div>
 </div>
 
@@ -873,7 +952,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-39255939451e.tgz", sha: "39255939451ede8d5bc3c170e95bd03dc501eae987e2d6fe91fd6b48f5114115"};
+const PAQUET = {fichier: "pod-de7e034d7765.tgz", sha: "de7e034d776533962e41d04411ca2c7b536b8de1d34579e5b05c4294d5be151f"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
@@ -1437,11 +1516,18 @@ function afficherSuivi() {
 }
 
 // ------------------------------------------------------------ feuilles
-function ouvrirFeuille(nom) {
+// « parent » : fenêtre d'où l'on vient ; un bouton « ‹ Session » (par ex.) y ramène au lieu de tout refermer
+function ouvrirFeuille(nom, parent) {
   fermerFeuilles(false);
   $("voile-fond").classList.remove("cache");
-  $("feuille-" + nom).classList.remove("cache");
-  if (nom === "session") { $("s-sortie").textContent = ""; rendreSession(); chargerAppareils(); }
+  const f = $("feuille-" + nom); f.classList.remove("cache"); f.scrollTop = 0;
+  const titre = f.querySelector(".titre");
+  let retour = titre.querySelector(".retour");
+  if (!retour) { retour = el("button", {class: "retour", type: "button"}); titre.prepend(retour); }
+  const p = parent && $("feuille-" + parent);
+  retour.classList.toggle("cache", !p);
+  if (p) { const t = (p.querySelector(".titre h2") || {}).textContent || "Retour"; retour.textContent = "‹ " + t; retour.setAttribute("aria-label", "Revenir à " + t); retour.onclick = () => ouvrirFeuille(parent); }
+  if (nom === "session") { rendreSession(); chargerAppareils(); }
   if (nom === "reglages") rendreReglages();
   if (nom === "comfy") rendreComfy();
 }
@@ -1449,6 +1535,7 @@ function fermerFeuilles() {
   if (A.choixAnnule && !$("feuille-galerie").classList.contains("cache")) { const f = A.choixAnnule; A.choixAnnule = null; f(); }
   $("voile-fond").classList.add("cache");
   for (const f of document.querySelectorAll(".feuille")) f.classList.add("cache");
+  for (const v of ["vue-creer", "vue-retoucher"]) $(v).classList.remove("plus-ouvert");
 }
 
 function rendreSession() {
@@ -1761,6 +1848,7 @@ function majBarre(travailId, bouton, texte, avance, stop, libelle, ids, bloc, bo
   rendreRecents();
 }
 function rendreGenerer() {
+  try { majRapides(); majBasculeRes(); } catch (e) {}
   majBarre(A.genTravail, $("btn-generer"), $("gen-texte"), $("gen-avance"), $("btn-stop"),
     F.nombre > 1 ? `Générer ${F.nombre} images` : "Générer", A.derniersIds, $("f-recents-bloc"));
   majBarre(A.retTravail, $("btn-retoucher"), $("ret-texte"), $("ret-avance"), $("btn-stop-r"),
@@ -1785,7 +1873,9 @@ function rendreRecents() {
     box.dataset.n = String(Math.min(n, 8));
     for (const id of ids) box.append(vignette(id, true));
     for (let i = 0; i < attente; i++) box.append(el("div", {class: "case-attente", "aria-label": "Image en cours"}, el("span", {texte: "En cours…"})));
+    for (const i of box.querySelectorAll("img")) i.addEventListener("load", ajusterLots);
   }
+  ajusterLots();
 }
 function nouveauLot(cote) {
   if (cote === "r") A.derniersRet = []; else A.derniersIds = [];
@@ -2246,7 +2336,7 @@ function choisirModeleRT(rel) {
 function rendreRetouche() {
   const m = modeleRT(), d = defautsRT(m), qwen = !!(m && m.famille === "qwen21"), ident = modeIdentite(m), anyp = modeAnypaint(m);
   $("r-vide").classList.toggle("cache", !!RT.source);
-  $("r-editeur").classList.toggle("cache", !RT.source);
+  $("r-editeur").classList.toggle("cache", !RT.source); requestAnimationFrame(ajusterLots);
   $("r-toile").classList.toggle("tout", !!RT.tout);
   $("r-tout").checked = !!RT.tout;
   for (const b of $("r-outil").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.outil === RT.outil);
@@ -2340,14 +2430,17 @@ function rendreReferences(m) {
   if (anypR) return;   // AnyPaint : pas d'image de référence
   $("r-ref-titre").textContent = ident ? "Personne à placer dans la scène (facultatif)" : max > 1 ? `Images de référence (facultatif, jusqu'à ${max})` : "Image de référence (facultatif)";
   if (max) {
-    const liste = el("div", {class: "ref-liste"});
-    RT.references.forEach((r, i) => liste.append(el("div", {class: "ref"}, el("img", {src: r.url, alt: "Référence"}),
-      el("div", {}, el("p", {class: "tres-discret", texte: ident ? "Ta photo est la scène ; cette image est la personne à y placer." : fam === "qwen21" ? `<image${i + 2}> dans ta consigne.` : fam === "krea2" ? "Krea 2 en reprend surtout le style." : "Klein s'en inspire (personnage, tenue, objet, style) selon ton texte."}),
-        el("button", {class: "bouton petit", type: "button", texte: "Retirer", onclick: () => { RT.references.splice(i, 1); rendreRetouche(); }})))));
-    box.append(liste);
-    if (RT.references.length < max) box.append(el("div", {class: "rangee", style: "margin-top:8px"},
-      el("button", {class: "bouton petit", type: "button", texte: "Importer", onclick: () => choisirReference("fichier")}),
-      el("button", {class: "bouton petit", type: "button", texte: "Galerie", onclick: () => choisirReference("galerie")})));
+    // petites vignettes : l'image à retoucher garde toute la place au centre
+    const grille = el("div", {class: "ref-mini-grille"});
+    RT.references.forEach((r, i) => grille.append(el("div", {class: "ref-mini"}, el("img", {src: r.url, alt: "Référence " + (i + 1)}),
+      el("span", {class: "etiquette", texte: ident ? "Personne" : fam === "qwen21" ? `<image${i + 2}>` : fam === "krea2" ? "Style" : "Réf. " + (i + 1)}),
+      el("button", {class: "croix", type: "button", "aria-label": "Retirer", texte: "✕", onclick: () => { RT.references.splice(i, 1); rendreRetouche(); }}))));
+    if (RT.references.length < max) grille.append(
+      el("button", {class: "ref-ajout", type: "button", texte: "+ Importer", "aria-label": "Importer", onclick: () => choisirReference("fichier")}),
+      el("button", {class: "ref-ajout", type: "button", texte: "+ Galerie", "aria-label": "Galerie", onclick: () => choisirReference("galerie")}));
+    box.append(grille, el("p", {class: "tres-discret", texte: ident ? "Ta photo est la scène ; la référence est la personne à y placer." :
+      fam === "qwen21" ? "Dans ta consigne, l'image à retoucher est <image1> et chaque référence garde l'étiquette affichée." :
+      fam === "krea2" ? "Krea 2 en reprend surtout le style." : "Klein s'en inspire (personnage, tenue, objet, style) selon ton texte."}));
   } else if (fam === "krea2") {
     box.append(el("p", {class: "tres-discret", texte: "Avec Krea 2, il faut le LoRA officiel « Style Reference » (Comfy-Org, 0,46 Go)."}),
       el("button", {class: "bouton petit", type: "button", texte: "Préparer son téléchargement", onclick: () => {
@@ -2389,7 +2482,7 @@ async function definirSource(origine, idGalerie) {
       toast("Envoi chiffré de la photo…"); src = await importerPhoto(f, 1.05);
     }
     finToast();
-    RT.source = src; historiqueMasque.length = 0;
+    RT.source = src; historiqueMasque.length = 0; A.vueRes = "image";
     const img = $("r-img"); img.src = src.url;
     const cv = $("r-masque"); cv.width = src.largeur; cv.height = src.hauteur;
     cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
@@ -2729,20 +2822,155 @@ function exporterListe() {
 
 // ------------------------------------------------------------ navigation
 function choisirVue(v) {
-  A.vue = v;
+  A.vue = v; fermerPlus();
   if (v === "images") A.nouvellesImages = 0;
   for (const b of $("onglets").querySelectorAll("button")) b.setAttribute("aria-selected", b.dataset.vue === v);
   rendre();
   if (v === "modeles") { rendreListe(); rendreModeles(); }
 }
 
+
+// ------------------------------------------------------------ téléphone : barre de saisie, « Plus de réglages », lot ajusté
+const TEL = matchMedia("(max-width:959.98px)");
+// Sur téléphone, le prompt passe dans la barre du bas ; sur ordinateur il reste dans le panneau de gauche.
+function placerPrompts() {
+  for (const c of ["f", "r"]) {
+    const champ = $(c + "-prompt").closest(".champ.prompt");
+    const cible = TEL.matches ? $(c + "-prompt-tel") : null;
+    if (cible) { if (champ.parentNode !== cible) cible.append(champ); }
+    else if (champ.previousElementSibling !== $(c + "-prompt-maison")) $(c + "-prompt-maison").after(champ);
+    ajusterHauteur($(c + "-prompt"));
+  }
+  if (!TEL.matches) fermerPlus();
+}
+function ouvrirPlus(c, cible) {
+  if (!TEL.matches) { if (cible && $(cible)) $(cible).scrollIntoView({block: "center"}); return; }
+  const r = $(c + "-reglages");
+  $("vue-" + (c === "f" ? "creer" : "retoucher")).classList.add("plus-ouvert");
+  $("voile-fond").classList.remove("cache");
+  r.scrollTop = 0;
+  const x = cible && $(cible);
+  if (x) requestAnimationFrame(() => { const t = x.closest(".champ, .interrupteur, h3 + *, details") || x;
+    r.scrollTop = Math.max(0, t.getBoundingClientRect().top - r.getBoundingClientRect().top - 70); });
+}
+function fermerPlus() {
+  let ouvert = false;
+  for (const v of ["vue-creer", "vue-retoucher"]) if ($(v).classList.contains("plus-ouvert")) { $(v).classList.remove("plus-ouvert"); ouvert = true; }
+  if (ouvert && !document.querySelector(".feuille:not(.cache)")) $("voile-fond").classList.add("cache");
+}
+function court(t, n = 18) { t = (t || "").split(" · ")[0].trim(); return t.length > n ? t.slice(0, n - 1) + "…" : t; }
+function puce(texte, action, aria) { return el("button", {class: "puce-rapide", type: "button", texte, "aria-label": aria || texte, onclick: action}); }
+const SIG_RAPIDES = {};
+function majRapides() {
+  const listes = {f: [], r: []};
+  const wfF = !$("f-wf").classList.contains("cache"), wfR = !$("r-wf").classList.contains("cache");
+  // Créer
+  const selF = wfF ? $("f-workflow") : $("f-modele"), optF = selF.selectedOptions[0];
+  listes.f.push(["m", court(optF ? optF.textContent : "Modèle"), () => ouvrirPlus("f", wfF ? "f-workflow" : "f-modele"), "Modèle"]);
+  if (!wfF) {
+    const ordre = ["carre", "portrait", "paysage"], noms = {carre: "Carré", portrait: "Portrait", paysage: "Paysage", perso: "Perso"};
+    listes.f.push(["fmt", noms[F.format] || "Format", () => { const i = ordre.indexOf(F.format); const b = $("f-format").querySelector(`[data-format=${ordre[(i + 1) % 3]}]`); if (b) b.click(); }, "Format : " + (noms[F.format] || "")]);
+  }
+  listes.f.push(["n", "× " + F.nombre, () => ouvrirPlus("f", "f-nombre"), "Nombre d'images : " + F.nombre]);
+  if (!wfF) { const n = F.loras.filter((x) => x.actif !== false).length; listes.f.push(["l", n ? `LoRA ${n}` : "LoRA", () => ouvrirPlus("f", "f-ajout-lora"), "LoRA"]); }
+  listes.f.push(["d", "Depuis une image", () => $("f-decrire").click()]);
+  listes.f.push(["p", "Réglages", () => ouvrirPlus("f"), "Plus de réglages"]);
+  // Retoucher
+  const selR = wfR ? $("r-workflow") : $("r-modele"), optR = selR.selectedOptions[0];
+  listes.r.push(["m", court(optR ? optR.textContent : "Modèle"), () => ouvrirPlus("r", wfR ? "r-workflow" : "r-modele"), "Modèle"]);
+  if (!wfR && !$("r-krea-bloc").classList.contains("cache")) {
+    const b = $("r-krea-mode").querySelector("[aria-pressed=true]");
+    listes.r.push(["k", b ? b.textContent : "Méthode", () => ouvrirPlus("r", "r-krea-mode"), "Méthode"]);
+  }
+  if (!wfR && !$("r-ref").classList.contains("cache") && $("r-ref").querySelector(".ref-mini-grille"))
+    listes.r.push(["ref", RT.references.length ? `Réf. ${RT.references.length}` : "+ Réf.", () => ouvrirPlus("r", "r-ref"), "Images de référence"]);
+  listes.r.push(["n", "× " + RT.nombre, () => ouvrirPlus("r", "r-nombre"), "Nombre d'images : " + RT.nombre]);
+  if (!wfR) { const n = RT.loras.filter((x) => x.actif !== false).length; listes.r.push(["l", n ? `LoRA ${n}` : "LoRA", () => ouvrirPlus("r", "r-ajout-lora"), "LoRA"]); }
+  listes.r.push(["d", "Décrire", () => $("r-decrire").click(), "Décrire l'image"]);
+  listes.r.push(["p", "Réglages", () => ouvrirPlus("r"), "Plus de réglages"]);
+  for (const c of ["f", "r"]) {
+    const sig = listes[c].map((x) => x[0] + ":" + x[1]).join("|");
+    if (SIG_RAPIDES[c] === sig) continue;
+    SIG_RAPIDES[c] = sig;
+    const box = $(c + "-rapides"); box.textContent = "";
+    for (const [, t, f, a] of listes[c]) box.append(puce(t, f, a));
+  }
+}
+
+// Retoucher : on bascule entre l'image à retoucher et les résultats du lot (automatique quand le lot se termine).
+A.vueRes = "image";
+function majBasculeRes() {
+  const t = A.etat && A.etat.travaux.find((x) => x.id === A.retTravail);
+  const enCours = !!(t && t.etat === "encours");
+  const n = A.derniersRet.length, total = enCours ? (t.total || n) : n;
+  // lot terminé (même très vite, entre deux nouvelles du Pod) : on montre ses résultats, une fois par lot
+  if (t && !enCours && n && A.retFiniVu !== t.id) { A.retFiniVu = t.id; A.vueRes = "resultats"; requestAnimationFrame(ajusterLots); }
+  const visible = !!(n || enCours);
+  if (!visible) A.vueRes = "image";
+  $("r-bascule").classList.toggle("cache", !visible);
+  $("r-bascule-res").textContent = enCours ? `Résultats (${n} / ${total})` : `Résultats (${n})`;
+  for (const b of $("r-bascule").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.res === A.vueRes);
+  $("r-res").dataset.affichage = A.vueRes;
+  $("r-recents-vide").classList.toggle("cache", !(A.vueRes === "resultats" && !n));
+}
+function choisirAffichageRes(v) { A.vueRes = v; majBasculeRes(); ajusterLots(); }
+
+// Grille du lot : autant de place que possible pour chaque image, selon la forme des images et la place libre.
+function ratioLot(box, c) {
+  const img = [...box.querySelectorAll("img")].find((i) => i.naturalWidth);
+  if (img) return img.naturalWidth / img.naturalHeight;
+  if (c === "r" && $("r-img").naturalWidth) return $("r-img").naturalWidth / $("r-img").naturalHeight;
+  return c === "f" && F.largeur && F.hauteur ? F.largeur / F.hauteur : 1;
+}
+function ajusterLots() {
+  for (const [c, boite, bloc] of [["f", "f-recents", "f-recents-bloc"], ["r", "r-recents", "r-recents-bloc"]]) {
+    const box = $(boite), b = $(bloc);
+    const n = box.children.length;
+    if (!n || b.classList.contains("cache")) continue;
+    const tete = b.querySelector(".res-tete");
+    const W = b.clientWidth, H = b.clientHeight - (tete ? tete.offsetHeight + 8 : 0);
+    if (W < 40 || H < 40) continue;
+    const r = ratioLot(box, c), gap = 8;
+    let meilleur = null;
+    for (let col = 1; col <= n; col++) {
+      const lig = Math.ceil(n / col);
+      const w = Math.min((W - gap * (col - 1)) / col, ((H - gap * (lig - 1)) / lig) * r);
+      if (!meilleur || w > meilleur.w + 0.5) meilleur = {col, w};
+    }
+    const w = Math.floor(meilleur.w), h = Math.floor(w / r);
+    box.style.gridTemplateColumns = `repeat(${meilleur.col}, ${w}px)`;
+    box.style.gridAutoRows = `${h}px`;
+    box.style.gridTemplateRows = "";
+    box.classList.add("ajuste");
+  }
+  // image à retoucher : aussi haute que la place laissée par les outils
+  const z = document.querySelector("#r-res .zone-toile"), ed = $("r-editeur"), t = $("r-toile");
+  const im = $("r-img");
+  if (z && !ed.classList.contains("cache") && z.clientHeight > 0 && im.naturalWidth) {
+    const autres = ed.offsetHeight - t.offsetHeight;
+    const H = Math.max(140, z.clientHeight - autres - 4), W = z.clientWidth;
+    const r = im.naturalWidth / im.naturalHeight;
+    const w = Math.floor(Math.min(W, H * r)), h = Math.floor(w / r);
+    if (im.style.width !== w + "px" || im.style.height !== h + "px") { im.style.width = w + "px"; im.style.height = h + "px"; }
+  }
+}
+const observateurLots = typeof ResizeObserver === "function" ? new ResizeObserver(() => ajusterLots()) : null;
+
 // ------------------------------------------------------------ événements
 function brancher() {
   document.addEventListener("touchstart", () => {}, {passive: true});   // iOS : active l'effet d'appui (:active) au toucher
   $("pastille").onclick = () => ouvrirFeuille("session");
   $("voile-fond").onclick = fermerFeuilles;
+  placerPrompts();
+  TEL.addEventListener ? TEL.addEventListener("change", () => { placerPrompts(); ajusterLots(); }) : TEL.addListener(placerPrompts);
+  for (const b of document.querySelectorAll("[data-fermer-plus]")) b.onclick = fermerPlus;
+  for (const b of $("r-bascule").querySelectorAll("button")) b.onclick = () => choisirAffichageRes(b.dataset.res);
+  for (const v of ["vue-creer", "vue-retoucher"]) for (const ev of ["input", "change", "click"]) $(v).addEventListener(ev, () => setTimeout(() => { try { majRapides(); } catch (e) {} }, 0));
+  if (observateurLots) for (const b of ["f-recents-bloc", "r-recents-bloc", "f-res", "r-res"]) observateurLots.observe($(b));
+  $("r-img").addEventListener("load", ajusterLots);
   for (const b of document.querySelectorAll("[data-fermer]")) b.onclick = fermerFeuilles;
-  for (const b of document.querySelectorAll("[data-ouvrir]")) b.onclick = () => ouvrirFeuille(b.dataset.ouvrir);
+  for (const b of document.querySelectorAll("[data-ouvrir]")) b.onclick = () => {
+    const depuis = b.closest(".feuille"); ouvrirFeuille(b.dataset.ouvrir, depuis ? depuis.id.replace("feuille-", "") : undefined); };
   for (const b of $("onglets").querySelectorAll("button")) b.onclick = () => choisirVue(b.dataset.vue);
   $("pref-liste").onchange = (e) => { S.prefs.liste = e.target.checked; sauver(); };
   $("btn-manuel").onclick = connecterManuel;
@@ -2771,18 +2999,21 @@ function brancher() {
   };
   $("btn-audit").onclick = async () => {
     if (!A.canal) return;
+    ouvrirFeuille("sortie", "session"); $("so-titre").textContent = "Contrôle du disque";
     afficherSortie("Contrôle en cours (jusqu'à une minute)…");
     try { const r = await A.canal.appel("audit"); A.auditTravail = r.travail; boucle(); } catch (e) { afficherSortie(e.message, false); }
   };
   $("btn-infos").onclick = async () => {
     if (!A.canal) return;
+    ouvrirFeuille("sortie", "session"); $("so-titre").textContent = "Infos du Pod";
     afficherSortie("Lecture des informations du Pod…");
     try { const r = await A.canal.appel("infos", {}, 90000); afficherSortie(r.texte); } catch (e) { afficherSortie(e.message, false); }
   };
-  $("btn-comfy").onclick = () => ouvrirFeuille("comfy");
+  $("btn-comfy").onclick = () => ouvrirFeuille("comfy", "session");
   for (const b of document.querySelectorAll("[data-copier]")) b.onclick = () => copier(b.dataset.copier, "Commande");
   $("btn-journal").onclick = async () => {
     if (!A.canal) return;
+    ouvrirFeuille("sortie", "session"); $("so-titre").textContent = "Journal"; afficherSortie("Lecture du journal…");
     try { const r = await A.canal.appel("journal"); afficherSortie(r.lignes.slice(-150).join("\n") || "Journal vide."); const p = $("s-sortie").querySelector("pre"); if (p) p.scrollTop = p.scrollHeight; }
     catch (e) { afficherSortie(e.message, false); }
   };
@@ -2965,7 +3196,11 @@ function brancher() {
   window.addEventListener("pagehide", () => $("rideau").classList.add("actif"));
   window.addEventListener("pageshow", () => $("rideau").classList.remove("actif"));
 }
-function ajusterHauteur(t) { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight + 2, window.innerHeight * 0.5) + "px"; }
+function ajusterHauteur(t) {
+  const bas = !!t.closest(".emplacement-prompt");     // barre du bas du téléphone : 2 lignes, jusqu'à 4 au besoin
+  t.style.height = bas ? "52px" : "auto";
+  t.style.height = Math.min(t.scrollHeight + 2, bas ? 104 : window.innerHeight * 0.5) + "px";
+}
 
 brancher();
 rendreFormulaire();
