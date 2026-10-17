@@ -377,6 +377,12 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .ref-mini .croix{position:absolute;right:3px;top:3px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(13,17,23,.85);color:var(--texte);font-size:11px;display:grid;place-items:center;padding:0}
 .ref-ajout{aspect-ratio:1;border-radius:10px;border:1px dashed var(--trait);background:transparent;color:var(--texte-2);font-size:12px;padding:4px}
 .ref-ajout:active{transform:scale(.96);filter:brightness(.82)}
+.zone-texte{position:relative}
+.zone-texte textarea{padding-right:44px}
+.vider-prompt{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:50%;border:1px solid var(--trait);background:var(--surface-2);
+  color:var(--texte-2);font-size:13px;display:grid;place-items:center;padding:0}
+.vider-prompt:active{transform:scale(.92);filter:brightness(.82)}
+.vider-prompt.retablir{color:var(--lumiere);border-color:var(--lumiere);font-size:16px}
 .pinceau{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px}
 .pinceau .segments{flex:0 0 auto}
 .pinceau .curseur{flex:1;min-width:120px;margin:0}
@@ -577,7 +583,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <span class="maison-prompt" id="f-prompt-maison" hidden></span>
     <div class="champ prompt">
       <div class="ligne-champ"><label for="f-prompt">Prompt</label><button class="lien" type="button" id="f-decrire">Prompt depuis une image</button></div>
-      <textarea id="f-prompt" rows="5" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Décris l'image…"></textarea></div>
+      <div class="zone-texte"><textarea id="f-prompt" rows="5" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Décris l'image…"></textarea><button class="vider-prompt cache" type="button" id="f-vider" aria-label="Vider le prompt" title="Vider le prompt">✕</button></div></div>
     <p class="aide-variantes">Variantes : écris {rousse|brune|blonde} et chaque image en tire une au hasard.</p>
     <div id="f-std">
 
@@ -720,7 +726,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <span class="maison-prompt" id="r-prompt-maison" hidden></span>
     <div class="champ prompt">
       <div class="ligne-champ"><label for="r-prompt" id="r-prompt-label">Ce qu'il faut obtenir</label><button class="lien" type="button" id="r-decrire">Décrire l'image</button></div>
-      <textarea id="r-prompt" rows="4" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Décris le résultat voulu dans la zone peinte…"></textarea>
+      <div class="zone-texte"><textarea id="r-prompt" rows="4" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Décris le résultat voulu dans la zone peinte…"></textarea><button class="vider-prompt cache" type="button" id="r-vider-prompt" aria-label="Vider la consigne" title="Vider la consigne">✕</button></div>
       <p class="aide-variantes" id="r-prompt-aide"></p>
     </div>
     <div id="r-std">
@@ -1170,7 +1176,7 @@ class Canal {
 }
 
 // ------------------------------------------------------------ état de l'application
-const A = {canal: null, etat: null, modeles: null, images: [], versionImages: -1, versionModeles: -1, demandeModeles: 0,
+const A = {canal: null, etat: null, modeles: null, images: [], versionImages: -1, versionModeles: -1, demandeModeles: 0, lotPrevu: {},
   vue: "creer", vignettes: new Map(), pleines: new Map(), analyse: null, analyseTravail: null, travauxVus: new Set(),
   formulaireImage: null, genTravail: null, retTravail: null, nouvellesImages: 0, derniersIds: [], derniersRet: [], connexion: "aucune",
   descTravail: null, descImage: null, descCible: "f-prompt", outilTravail: null, acces: null, demandesVues: new Set(), appareils: []};
@@ -1748,7 +1754,7 @@ function rendreFormulaire() {
   $("f-modele-aide").textContent = !m ? "" : !d ? "Architecture non prise en charge par le Studio." :
     m.composants === false ? "Composants (encodeur, VAE) manquants : réinstalle ce modèle depuis Modèles." :
     `${d.variante} · ${m.go} Go`;
-  if ($("f-prompt").value !== F.prompt) $("f-prompt").value = F.prompt;
+  if ($("f-prompt").value !== F.prompt) $("f-prompt").value = F.prompt; majVider("f");
   if ($("f-negatif").value !== F.negatif) $("f-negatif").value = F.negatif;
   $("f-negatif-champ").classList.toggle("cache", !(d && d.negatif));
   const fmts = d && d.largeur ? FORMATS_SD1 : FORMATS;
@@ -1870,7 +1876,7 @@ async function generer() {
   $("btn-generer").disabled = true;
   try {
     const r = await A.canal.appel("generer", dem);
-    A.genTravail = r.travail; A.derniersIds = [];
+    A.genTravail = r.travail; A.derniersIds = []; A.lotPrevu["f-recents"] = {id: r.travail, total: F.nombre};
     if (A.etat) A.etat.travaux.push({id: r.travail, type: "generation", etat: "encours", total: F.nombre, faites: 0, images: []});
     rendreGenerer();
     boucle();
@@ -1913,9 +1919,13 @@ function rendreRecents() {
   for (const [ids, boite, bloc, travailId, info] of [[A.derniersIds, "f-recents", "f-recents-bloc", A.genTravail, "f-lot-info"],
                                                       [A.derniersRet, "r-recents", "r-recents-bloc", A.retTravail, "r-lot-info"]]) {
     const t = A.etat && A.etat.travaux.find((x) => x.id === travailId);
-    const attente = t && (t.etat === "encours" || t.etat === "attente") ? Math.max(0, (t.total || 0) - ids.length) : 0;
+    const prevu = A.lotPrevu[boite];
+    if (t && prevu && prevu.id === t.id && !["encours", "attente"].includes(t.etat)) delete A.lotPrevu[boite];   // lot fini
+    let attente = t && (t.etat === "encours" || t.etat === "attente") ? Math.max(0, (t.total || 0) - ids.length) : 0;
+    // nouvelle du Pod partie juste avant la création du lot : on garde les cases d'attente prévues
+    if (!t && A.lotPrevu[boite] && A.lotPrevu[boite].id === travailId) attente = Math.max(0, A.lotPrevu[boite].total - ids.length);
     const n = ids.length + attente;
-    $(info).textContent = !n ? "" : attente ? `${ids.length} / ${t.total}` : `${ids.length} image${ids.length > 1 ? "s" : ""}`;
+    $(info).textContent = !n ? "" : attente ? `${ids.length} / ${ids.length + attente}` : `${ids.length} image${ids.length > 1 ? "s" : ""}`;
     if (boite === "f-recents") $("f-recents-vide").classList.toggle("cache", !!n);
     $(bloc).classList.toggle("cache", !n);
     const sig = ids.join(",") + "|" + attente;
@@ -2435,7 +2445,7 @@ function rendreRetouche() {
     $("r-prompt").placeholder = RT.references.length ? "Ex. : Place this person at the cafe table, holding a coffee." : "Ex. : Change her outfit to a red raincoat.";
     $("r-prompt-aide").textContent = "Une consigne simple, de préférence en anglais. Visage trop « générique » ? Ajoute : « Preserve the exact facial identity » et décris ses traits. Zone peinte facultative : si tu peins, seule cette zone change.";
   }
-  if ($("r-prompt").value !== RT.prompt) $("r-prompt").value = RT.prompt;
+  if ($("r-prompt").value !== RT.prompt) $("r-prompt").value = RT.prompt; majVider("r");
   if ($("r-negatif").value !== RT.negatif) $("r-negatif").value = RT.negatif;
   $("r-negatif-champ").classList.toggle("cache", !(d && d.negatif));
   $("r-negatif-label").textContent = qwen ? "À éviter (pris en compte seulement avec un CFG supérieur à 1)" : "À éviter";
@@ -2624,7 +2634,7 @@ async function retoucher() {
   $("btn-retoucher").disabled = true;
   try {
     const r = await A.canal.appel("retoucher", dem, 90000);
-    A.retTravail = r.travail; A.derniersRet = [];
+    A.retTravail = r.travail; A.derniersRet = []; A.lotPrevu["r-recents"] = {id: r.travail, total: RT.nombre};
     if (A.etat) A.etat.travaux.push({id: r.travail, type: "generation", etat: "encours", total: RT.nombre, faites: 0, images: []});
     rendreGenerer(); boucle();
   } catch (e) { toast(e.message, true); }
@@ -2807,6 +2817,7 @@ async function lancerWorkflow(cote) {
   try {
     const res = await A.canal.appel("executer_workflow", {graphe: w.graphe, valeurs, images, masque, prompts, graines, nom: w.nom}, 90000);
     if (r) { A.retTravail = res.travail; A.derniersRet = []; } else { A.genTravail = res.travail; A.derniersIds = []; }
+    A.lotPrevu[r ? "r-recents" : "f-recents"] = {id: res.travail, total: n};
     if (A.etat) A.etat.travaux.push({id: res.travail, type: "generation", etat: "encours", total: n, faites: 0, images: []});
     rendreGenerer(); boucle();
   } catch (e) { toast(e.message, true); }
@@ -2953,8 +2964,9 @@ function majRapides() {
 A.vueRes = "image";
 function majBasculeRes() {
   const t = A.etat && A.etat.travaux.find((x) => x.id === A.retTravail);
-  const enCours = !!(t && (t.etat === "encours" || t.etat === "attente"));
-  const n = A.derniersRet.length, total = enCours ? (t.total || n) : n;
+  const prevuR = !t && A.lotPrevu["r-recents"] && A.lotPrevu["r-recents"].id === A.retTravail ? A.lotPrevu["r-recents"] : null;
+  const enCours = !!prevuR || !!(t && (t.etat === "encours" || t.etat === "attente"));
+  const n = A.derniersRet.length, total = prevuR ? prevuR.total : enCours ? (t.total || n) : n;
   // lot terminé (même très vite, entre deux nouvelles du Pod) : on montre ses résultats, une fois par lot
   if (t && !enCours && n && A.retFiniVu !== t.id) { A.retFiniVu = t.id; A.vueRes = "resultats"; requestAnimationFrame(ajusterLots); }
   const visible = !!(n || enCours);
@@ -3018,6 +3030,24 @@ function ajusterLots() {
 }
 const observateurLots = typeof ResizeObserver === "function" ? new ResizeObserver(() => ajusterLots()) : null;
 
+
+// ✕ vide le prompt ; juste après, le bouton devient ↶ pour le rétablir (en cas de toucher par erreur)
+const PROMPT_EFFACE = {};
+function majVider(c) {
+  const t = $(c + "-prompt"), b = $(c === "f" ? "f-vider" : "r-vider-prompt");
+  const retablir = !t.value && PROMPT_EFFACE[c];
+  b.classList.toggle("cache", !t.value && !retablir);
+  b.classList.toggle("retablir", !!retablir);
+  b.textContent = retablir ? "↶" : "✕";
+  b.setAttribute("aria-label", retablir ? "Rétablir le texte effacé" : "Vider le texte");
+  b.title = b.getAttribute("aria-label");
+}
+function viderPrompt(c) {
+  const t = $(c + "-prompt");
+  if (t.value) { PROMPT_EFFACE[c] = t.value; t.value = ""; }
+  else if (PROMPT_EFFACE[c]) { t.value = PROMPT_EFFACE[c]; delete PROMPT_EFFACE[c]; }
+  t.dispatchEvent(new Event("input")); t.focus(); majVider(c);
+}
 // ------------------------------------------------------------ événements
 function brancher() {
   document.addEventListener("touchstart", () => {}, {passive: true});   // iOS : active l'effet d'appui (:active) au toucher
@@ -3026,6 +3056,8 @@ function brancher() {
   placerPrompts();
   TEL.addEventListener ? TEL.addEventListener("change", () => { placerPrompts(); ajusterLots(); }) : TEL.addListener(placerPrompts);
   for (const b of document.querySelectorAll("[data-fermer-plus]")) b.onclick = fermerPlus;
+  $("f-vider").onclick = () => viderPrompt("f"); $("r-vider-prompt").onclick = () => viderPrompt("r");
+  for (const c of ["f", "r"]) $(c + "-prompt").addEventListener("input", (e) => { if (e.isTrusted && $(c + "-prompt").value) delete PROMPT_EFFACE[c]; majVider(c); });
   for (const c of ["f", "r"]) for (const ev of ["focus", "blur"]) $(c + "-prompt").addEventListener(ev, () => { ajusterHauteur($(c + "-prompt")); setTimeout(ajusterLots, 200); });
   for (const b of $("r-bascule").querySelectorAll("button")) b.onclick = () => choisirAffichageRes(b.dataset.res);
   for (const v of ["vue-creer", "vue-retoucher"]) for (const ev of ["input", "change", "click"]) $(v).addEventListener(ev, () => setTimeout(() => { try { majRapides(); } catch (e) {} }, 0));
