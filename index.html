@@ -377,6 +377,22 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .ref-mini .croix{position:absolute;right:3px;top:3px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(13,17,23,.85);color:var(--texte);font-size:11px;display:grid;place-items:center;padding:0}
 .ref-ajout{aspect-ratio:1;border-radius:10px;border:1px dashed var(--trait);background:transparent;color:var(--texte-2);font-size:12px;padding:4px}
 .ref-ajout:active{transform:scale(.96);filter:brightness(.82)}
+.pinceau{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px}
+.pinceau .segments{flex:0 0 auto}
+.pinceau .curseur{flex:1;min-width:120px;margin:0}
+.pinceau .rangee{margin:0;flex:0 0 auto;flex-wrap:nowrap;gap:6px}
+.pinceau .rangee .bouton{flex:0 0 auto;min-height:36px;height:36px;padding:0 10px;white-space:nowrap;font-size:13px}
+.pinceau .rangee .bouton.icone-seule{width:40px;padding:0;display:grid;place-items:center}
+.pinceau .curseur output{white-space:nowrap;width:auto;min-width:46px;flex:none;text-align:right}
+/* PC : outils avec leur nom ; téléphone : colonne d'icônes à droite de l'image */
+.pinceau .ico{display:none}
+.pinceau .icone-seule .ico{display:block}
+.taille-btn{display:none!important}
+.taille-pt{display:block;border-radius:50%;background:var(--lumiere);opacity:.85}
+.tout-ico{display:flex;align-items:center;gap:8px}
+.pinceau .curseur input{min-width:0;width:auto}
+.tout-image{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--texte-2);white-space:nowrap;margin-left:auto}
+.tout-image label[for]{cursor:pointer}
 
 @media (max-width:959.98px){
   body.atelier{height:100dvh;overflow:hidden;display:flex;flex-direction:column}
@@ -389,6 +405,32 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   #f-recents,#r-recents{flex:1;min-height:0}
   #vue-retoucher .zone-toile{flex:1;min-height:0;overflow:auto}
   .atelier .pinceau{margin-top:6px;gap:6px}
+  #r-editeur{display:grid;grid-template-columns:minmax(0,1fr) 46px;gap:8px;align-items:start;position:relative}
+  #r-editeur .toile{grid-column:1}
+  #r-editeur.deux-cotes{grid-template-columns:46px minmax(0,1fr) 46px;grid-template-rows:auto 1fr}
+  #r-editeur.deux-cotes .toile{grid-column:2;grid-row:1 / span 2}
+  #r-editeur.deux-cotes .pinceau{display:contents}
+  #r-editeur.deux-cotes #r-outil{grid-column:1;grid-row:1;align-self:start}
+  #r-editeur.deux-cotes .taille-btn{grid-column:1;grid-row:1;align-self:end;justify-self:center}
+  #r-editeur.deux-cotes .rangee{grid-column:3;grid-row:1;align-self:start}
+  #r-editeur.deux-cotes .tout-image{grid-column:3;grid-row:2;align-self:start;margin-top:6px}
+  #r-editeur.deux-cotes .curseur{left:54px;right:auto;top:100px}
+  .atelier .pinceau{grid-column:2;flex-direction:column;flex-wrap:nowrap;align-items:center;gap:6px;margin:0;overflow-y:auto;scrollbar-width:none}
+  .pinceau .txt{display:none}
+  .pinceau .ico{display:block}
+  .pinceau .segments{flex-direction:column;padding:2px;gap:2px;border-radius:12px}
+  .pinceau .segments button{width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none;border-radius:10px}
+  .pinceau .rangee{flex-direction:column;gap:6px}
+  .pinceau .rangee .bouton,.pinceau .taille-btn{width:44px;height:42px;min-height:42px;padding:0;display:grid!important;place-items:center}
+  .pinceau .curseur{display:none;position:absolute;right:54px;top:96px;z-index:5;width:min(240px,70vw);background:var(--surface);border:1px solid var(--trait);
+    border-radius:12px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  .pinceau.taille-ouverte .curseur{display:flex}
+  .pinceau.taille-ouverte .taille-btn{border-color:var(--lumiere)}
+  .tout-image{margin:0;flex-direction:column;gap:0}
+  .tout-image .bascule{display:none}
+  .tout-ico{width:44px;height:42px;justify-content:center;border:1px solid var(--trait);border-radius:10px;background:var(--surface-2);color:var(--texte-2)}
+  .tout-image:has(#r-tout:checked) .tout-ico{color:var(--lumiere);border-color:var(--lumiere);background:transparent}
+  .tout-image:has(#r-tout:disabled) .tout-ico{opacity:.4}
   /* « Plus de réglages » : fenêtre du bas, avec sa croix, qui défile seule */
   .atelier .reglages{display:none;position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:84dvh;overflow:auto;
     -webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--trait);border-bottom:0;
@@ -410,23 +452,32 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .emplacement-prompt{display:block}
   .emplacement-prompt .champ.prompt{margin:0}
   .emplacement-prompt .ligne-champ{display:none}
-  .emplacement-prompt textarea{min-height:52px;height:52px;max-height:110px;padding:8px 11px;font-size:16px}
+  .emplacement-prompt textarea{min-height:88px;height:88px;padding:8px 11px;font-size:16px;line-height:1.4;transition:height .15s}
   .emplacement-prompt .aide-variantes{display:none}
   .atelier .action{flex:none;position:static;margin:0;padding:0;background:none}
   .atelier .action .generer,.atelier .action .stop{min-height:46px;height:46px}
   .bascule-res{margin-bottom:6px}
 }
 @media (min-width:960px){
-  .composeur{display:contents}
   body.atelier{height:100vh;overflow:hidden}
   body.atelier main{max-width:none;height:calc(100vh - 68px);padding:4px 16px 16px}
-  body.atelier section.vue.atelier.active{display:grid;height:100%;grid-template-columns:340px minmax(0,1fr) 320px;
-    grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"g r d" "a r d";gap:12px}
+  body.atelier section.vue.atelier.active{display:grid;height:100%;grid-template-columns:320px minmax(0,1fr) 320px;
+    grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"g r d" "g c d";gap:12px}
+  /* sous les images : le prompt et le bouton, côte à côte */
+  .composeur{grid-area:c;display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:12px;align-items:stretch;background:var(--surface);
+    border:1px solid var(--trait);border-radius:var(--r-grand);padding:10px 12px 12px;min-width:0}
+  .emplacement-prompt{display:block;min-width:0}
+  .emplacement-prompt .champ.prompt{margin:0}
+  .emplacement-prompt .ligne-champ{margin-bottom:6px}
+  .emplacement-prompt textarea{min-height:76px;font-size:14px}
+  .emplacement-prompt .aide-variantes{margin:6px 0 0}
+  .composeur .action{display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
+  .composeur .action .generer{flex:1;max-height:110px;min-height:52px}
   .atelier .reglages{display:contents}
   .atelier .panneau{background:var(--surface);border:1px solid var(--trait);border-radius:var(--r-grand);padding:0 16px 16px;overflow:auto;min-height:0}
   .atelier .panneau.gauche{grid-area:g}
   .atelier .panneau.droite{grid-area:d}
-  .atelier .action{grid-area:a;position:static;margin:0;padding:0;background:none}
+  .atelier .action{position:static;margin:0;padding:0;background:none}
   .atelier .res{grid-area:r;background:var(--fond-scene);border:1px solid var(--trait-doux);border-radius:var(--r-grand);padding:14px;
     display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
   #vue-creer .res .vide{flex:1;display:grid;place-items:center}
@@ -440,9 +491,11 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .bascule-res{align-self:flex-start}
   .ref-mini-grille{grid-template-columns:repeat(3,minmax(0,1fr))}
   .atelier .pinceau{flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px}
-  .atelier .pinceau .segments{flex:0 0 200px}
-  .atelier .pinceau .curseur{flex:1;min-width:160px;margin:0}
-  .atelier .pinceau .rangee{flex:1 1 100%}
+  .atelier .pinceau{flex-wrap:nowrap}
+  .atelier .pinceau .segments{flex:0 0 auto}
+  .atelier .pinceau .segments button{padding-inline:12px}
+  .atelier .pinceau .curseur{flex:1 1 auto;min-width:120px;margin:0}
+  .atelier .pinceau .curseur output{white-space:nowrap}
 }
 </style>
 </head>
@@ -527,9 +580,6 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
       <textarea id="f-prompt" rows="5" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Décris l'image…"></textarea></div>
     <p class="aide-variantes">Variantes : écris {rousse|brune|blonde} et chaque image en tire une au hasard.</p>
     <div id="f-std">
-    <div class="puces" id="f-puces"></div>
-    <label class="champ" id="f-negatif-champ"><span>À éviter</span>
-      <textarea id="f-negatif" rows="3" autocapitalize="off" autocorrect="off" spellcheck="false" style="min-height:80px"></textarea></label>
 
     <h3>Format</h3>
     <div class="segments" id="f-format" role="group" aria-label="Format">
@@ -571,6 +621,9 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     </div>
     <div class="panneau droite">
     <div id="f-std-droite">
+    <label class="champ" id="f-negatif-champ"><span>À éviter</span>
+      <textarea id="f-negatif" rows="3" autocapitalize="off" autocorrect="off" spellcheck="false" style="min-height:80px"></textarea></label>
+    <div class="puces" id="f-puces"></div>
     <h3>LoRA</h3>
     <div id="f-loras"></div>
     <select id="f-ajout-lora" aria-label="Ajouter un LoRA"></select>
@@ -623,16 +676,14 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     </div>
     <div id="r-editeur" class="cache">
       <div class="toile" id="r-toile"><img id="r-img" alt=""><canvas id="r-masque" aria-label="Zone à modifier"></canvas></div>
-      <div class="pinceau">
+      <div class="pinceau" id="r-pinceau">
         <div class="segments" id="r-outil" role="group" aria-label="Pinceau">
-          <button type="button" data-outil="peindre">Peindre</button><button type="button" data-outil="gommer">Gommer</button>
+          <button type="button" data-outil="peindre" aria-label="Peindre" title="Peindre"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12.5 6.5l5 5"/></svg><span class="txt">Peindre</span></button><button type="button" data-outil="gommer" aria-label="Gommer" title="Gommer"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4l5 5-10 10H6l-3-3z"/><path d="M11 20h9"/><path d="M9 10l5 5"/></svg><span class="txt">Gommer</span></button>
         </div>
+        <button class="bouton petit icone-seule taille-btn" type="button" id="r-taille-btn" aria-label="Taille du pinceau" title="Taille du pinceau"><span class="taille-pt" id="r-taille-pt"></span></button>
         <label class="curseur" aria-label="Taille du pinceau"><input type="range" id="r-taille" min="6" max="140" step="2"><output id="r-taille-val"></output></label>
-        <div class="rangee"><button class="bouton petit" type="button" id="r-annuler">Annuler le trait</button><button class="bouton petit" type="button" id="r-vider">Tout effacer</button><button class="bouton petit" type="button" id="r-changer">Autre image</button></div>
-      </div>
-      <div class="interrupteur">
-        <div><b>Modifier toute l'image</b><small>Sans masque : la force décide de ce qui change</small></div>
-        <label class="bascule"><input type="checkbox" id="r-tout"><span></span></label>
+        <div class="rangee"><button class="bouton petit icone-seule" type="button" id="r-annuler" aria-label="Annuler le trait" title="Annuler le trait"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button><button class="bouton petit" type="button" id="r-vider" aria-label="Tout effacer" title="Effacer tout le masque"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/></svg><span class="txt">Effacer</span></button><button class="bouton petit" type="button" id="r-changer" aria-label="Autre image" title="Autre image"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9.5" r="1.3"/></svg><span class="txt">Autre image</span></button></div>
+        <div class="tout-image" title="Sans masque : la force décide de ce qui change"><label for="r-tout" class="tout-ico"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="txt">Toute l'image</span></label><label class="bascule"><input type="checkbox" id="r-tout" aria-label="Modifier toute l'image (sans masque)"><span></span></label></div>
       </div>
     </div>
     </div>
@@ -673,8 +724,6 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
       <p class="aide-variantes" id="r-prompt-aide"></p>
     </div>
     <div id="r-std">
-    <label class="champ" id="r-negatif-champ"><span id="r-negatif-label">À éviter</span>
-      <textarea id="r-negatif" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" style="min-height:70px"></textarea></label>
     <div class="interrupteur" id="r-proteger-ligne">
       <div><b>Protéger le reste de l'image</b><small id="r-proteger-aide">Hors de la zone peinte, l'image reste identique au pixel près</small></div>
       <label class="bascule"><input type="checkbox" id="r-proteger"><span></span></label>
@@ -700,6 +749,8 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     </div>
     <div class="panneau droite">
     <div id="r-std-droite">
+    <label class="champ" id="r-negatif-champ"><span id="r-negatif-label">À éviter</span>
+      <textarea id="r-negatif" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" style="min-height:70px"></textarea></label>
     <h3 id="r-ref-titre">Image de référence (facultatif)</h3>
     <div id="r-ref"></div>
     <h3>LoRA</h3>
@@ -1829,9 +1880,10 @@ async function generer() {
 
 function majBarre(travailId, bouton, texte, avance, stop, libelle, ids, bloc, boite) {
   const g = A.etat && A.etat.travaux.find((x) => x.id === travailId);
-  const enCours = g && g.etat === "encours";
+  const enCours = g && (g.etat === "encours" || g.etat === "attente");
   stop.classList.toggle("cache", !enCours);
-  if (enCours) {
+  if (g && g.etat === "attente") { texte.textContent = "En attente…"; avance.style.width = "0"; }
+  else if (enCours) {
     const fait = g.faites || 0, total = g.total || 1;
     texte.textContent = `Image ${Math.min(fait + 1, total)} sur ${total}`;
     avance.style.width = (100 * fait / total) + "%";
@@ -1861,7 +1913,7 @@ function rendreRecents() {
   for (const [ids, boite, bloc, travailId, info] of [[A.derniersIds, "f-recents", "f-recents-bloc", A.genTravail, "f-lot-info"],
                                                       [A.derniersRet, "r-recents", "r-recents-bloc", A.retTravail, "r-lot-info"]]) {
     const t = A.etat && A.etat.travaux.find((x) => x.id === travailId);
-    const attente = t && t.etat === "encours" ? Math.max(0, (t.total || 0) - ids.length) : 0;
+    const attente = t && (t.etat === "encours" || t.etat === "attente") ? Math.max(0, (t.total || 0) - ids.length) : 0;
     const n = ids.length + attente;
     $(info).textContent = !n ? "" : attente ? `${ids.length} / ${t.total}` : `${ids.length} image${ids.length > 1 ? "s" : ""}`;
     if (boite === "f-recents") $("f-recents-vide").classList.toggle("cache", !!n);
@@ -2340,7 +2392,7 @@ function rendreRetouche() {
   $("r-toile").classList.toggle("tout", !!RT.tout);
   $("r-tout").checked = !!RT.tout;
   for (const b of $("r-outil").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.outil === RT.outil);
-  $("r-taille").value = RT.taille; $("r-taille-val").textContent = RT.taille + " px";
+  $("r-taille").value = RT.taille; $("r-taille-val").textContent = RT.taille + " px"; majPointTaille();
   // Qwen Image 2.1 pas encore installé : proposition d'installation en un geste
   const inst = installQwenEnCours();
   $("r-qwen").classList.toggle("cache", !A.modeles || !!A.modeles.qwen21);
@@ -2836,7 +2888,7 @@ const TEL = matchMedia("(max-width:959.98px)");
 function placerPrompts() {
   for (const c of ["f", "r"]) {
     const champ = $(c + "-prompt").closest(".champ.prompt");
-    const cible = TEL.matches ? $(c + "-prompt-tel") : null;
+    const cible = $(c + "-prompt-tel");      // téléphone et ordinateur : sous les images, avec le bouton
     if (cible) { if (champ.parentNode !== cible) cible.append(champ); }
     else if (champ.previousElementSibling !== $(c + "-prompt-maison")) $(c + "-prompt-maison").after(champ);
     ajusterHauteur($(c + "-prompt"));
@@ -2882,7 +2934,7 @@ function majRapides() {
     const b = $("r-krea-mode").querySelector("[aria-pressed=true]");
     listes.r.push(["k", b ? b.textContent : "Méthode", () => ouvrirPlus("r", "r-krea-mode"), "Méthode"]);
   }
-  if (!wfR && !$("r-ref").classList.contains("cache") && $("r-ref").querySelector(".ref-mini-grille"))
+  if (!wfR && !$("r-ref").classList.contains("cache") && $("r-ref").childElementCount)
     listes.r.push(["ref", RT.references.length ? `Réf. ${RT.references.length}` : "+ Réf.", () => ouvrirPlus("r", "r-ref"), "Images de référence"]);
   listes.r.push(["n", "× " + RT.nombre, () => ouvrirPlus("r", "r-nombre"), "Nombre d'images : " + RT.nombre]);
   if (!wfR) { const n = RT.loras.filter((x) => x.actif !== false).length; listes.r.push(["l", n ? `LoRA ${n}` : "LoRA", () => ouvrirPlus("r", "r-ajout-lora"), "LoRA"]); }
@@ -2901,7 +2953,7 @@ function majRapides() {
 A.vueRes = "image";
 function majBasculeRes() {
   const t = A.etat && A.etat.travaux.find((x) => x.id === A.retTravail);
-  const enCours = !!(t && t.etat === "encours");
+  const enCours = !!(t && (t.etat === "encours" || t.etat === "attente"));
   const n = A.derniersRet.length, total = enCours ? (t.total || n) : n;
   // lot terminé (même très vite, entre deux nouvelles du Pod) : on montre ses résultats, une fois par lot
   if (t && !enCours && n && A.retFiniVu !== t.id) { A.retFiniVu = t.id; A.vueRes = "resultats"; requestAnimationFrame(ajusterLots); }
@@ -2922,6 +2974,7 @@ function ratioLot(box, c) {
   if (c === "r" && $("r-img").naturalWidth) return $("r-img").naturalWidth / $("r-img").naturalHeight;
   return c === "f" && F.largeur && F.hauteur ? F.largeur / F.hauteur : 1;
 }
+function majPointTaille() { const d = Math.round(6 + 20 * (RT.taille - 6) / 134); $("r-taille-pt").style.width = $("r-taille-pt").style.height = d + "px"; }
 function ajusterLots() {
   for (const [c, boite, bloc] of [["f", "f-recents", "f-recents-bloc"], ["r", "r-recents", "r-recents-bloc"]]) {
     const box = $(boite), b = $(bloc);
@@ -2947,8 +3000,17 @@ function ajusterLots() {
   const z = document.querySelector("#r-res .zone-toile"), ed = $("r-editeur"), t = $("r-toile");
   const im = $("r-img");
   if (z && !ed.classList.contains("cache") && z.clientHeight > 0 && im.naturalWidth) {
-    const autres = ed.offsetHeight - t.offsetHeight;
-    const H = Math.max(140, z.clientHeight - autres - 4), W = z.clientWidth;
+    const cote = getComputedStyle(ed).display === "grid";       // téléphone : outils en colonne à côté de l'image
+    const pin = $("r-pinceau");
+    // une colonne à droite si elle tient en hauteur (l'image garde plus de largeur) ; sinon les outils des deux côtés
+    let deux = false;
+    if (cote) {
+      ed.classList.remove("deux-cotes"); pin.style.maxHeight = "";
+      deux = pin.scrollHeight > z.clientHeight - 4;
+      ed.classList.toggle("deux-cotes", deux);
+    }
+    const autres = cote ? 0 : ed.offsetHeight - t.offsetHeight;
+    const H = Math.max(140, z.clientHeight - autres - 4), W = cote ? z.clientWidth - (deux ? 108 : 54) : z.clientWidth;
     const r = im.naturalWidth / im.naturalHeight;
     const w = Math.floor(Math.min(W, H * r)), h = Math.floor(w / r);
     if (im.style.width !== w + "px" || im.style.height !== h + "px") { im.style.width = w + "px"; im.style.height = h + "px"; }
@@ -2964,6 +3026,7 @@ function brancher() {
   placerPrompts();
   TEL.addEventListener ? TEL.addEventListener("change", () => { placerPrompts(); ajusterLots(); }) : TEL.addListener(placerPrompts);
   for (const b of document.querySelectorAll("[data-fermer-plus]")) b.onclick = fermerPlus;
+  for (const c of ["f", "r"]) for (const ev of ["focus", "blur"]) $(c + "-prompt").addEventListener(ev, () => { ajusterHauteur($(c + "-prompt")); setTimeout(ajusterLots, 200); });
   for (const b of $("r-bascule").querySelectorAll("button")) b.onclick = () => choisirAffichageRes(b.dataset.res);
   for (const v of ["vue-creer", "vue-retoucher"]) for (const ev of ["input", "change", "click"]) $(v).addEventListener(ev, () => setTimeout(() => { try { majRapides(); } catch (e) {} }, 0));
   if (observateurLots) for (const b of ["f-recents-bloc", "r-recents-bloc", "f-res", "r-res"]) observateurLots.observe($(b));
@@ -3119,7 +3182,9 @@ function brancher() {
   $("r-galerie").onclick = () => definirSource("galerie");
   $("r-changer").onclick = () => { RT.source = null; RT.references = []; rendreRetouche(); };
   for (const b of $("r-outil").querySelectorAll("button")) b.onclick = () => { RT.outil = b.dataset.outil; sauverRT(); rendreRetouche(); };
-  $("r-taille").oninput = (e) => { RT.taille = parseInt(e.target.value, 10); $("r-taille-val").textContent = RT.taille + " px"; sauverRT(); };
+  $("r-taille").oninput = (e) => { RT.taille = parseInt(e.target.value, 10); $("r-taille-val").textContent = RT.taille + " px"; majPointTaille(); sauverRT(); };
+  $("r-taille-btn").onclick = (e) => { e.stopPropagation(); $("r-pinceau").classList.toggle("taille-ouverte"); };
+  document.addEventListener("pointerdown", (e) => { if (!e.target.closest("#r-pinceau .curseur, #r-taille-btn")) $("r-pinceau").classList.remove("taille-ouverte"); });
   $("r-annuler").onclick = () => { const h = historiqueMasque.pop(); if (h) $("r-masque").getContext("2d").putImageData(h, 0, 0); };
   $("r-vider").onclick = () => { const cv = $("r-masque"), c = cv.getContext("2d"); historiqueMasque.push(c.getImageData(0, 0, cv.width, cv.height)); c.clearRect(0, 0, cv.width, cv.height); };
   $("r-tout").onchange = (e) => { RT.tout = e.target.checked; const m = modeleRT();
@@ -3196,10 +3261,15 @@ function brancher() {
   window.addEventListener("pagehide", () => $("rideau").classList.add("actif"));
   window.addEventListener("pageshow", () => $("rideau").classList.remove("actif"));
 }
+// Barre du bas du téléphone : 3 lignes au repos (jusqu'à 4 si le texte est long) pour laisser la place aux images ;
+// pendant la frappe, le clavier cache de toute façon les images : le champ s'agrandit (au moins 7 lignes).
 function ajusterHauteur(t) {
-  const bas = !!t.closest(".emplacement-prompt");     // barre du bas du téléphone : 2 lignes, jusqu'à 4 au besoin
-  t.style.height = bas ? "52px" : "auto";
-  t.style.height = Math.min(t.scrollHeight + 2, bas ? 104 : window.innerHeight * 0.5) + "px";
+  const bas = !!t.closest(".emplacement-prompt");
+  if (!bas) { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight + 2, window.innerHeight * 0.5) + "px"; return; }
+  const actif = document.activeElement === t && TEL.matches;     // sur ordinateur, pas de clavier qui cache les images
+  const mini = actif ? 180 : TEL.matches ? 88 : 76, maxi = actif ? Math.max(180, Math.round(window.innerHeight * 0.42)) : TEL.matches ? 112 : 150;
+  t.style.height = mini + "px";
+  t.style.height = Math.max(mini, Math.min(t.scrollHeight + 2, maxi)) + "px";
 }
 
 brancher();
