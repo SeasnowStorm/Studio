@@ -2975,7 +2975,9 @@ function majBasculeRes() {
   $("r-bascule-res").textContent = enCours ? `Résultats (${n} / ${total})` : `Résultats (${n})`;
   for (const b of $("r-bascule").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.res === A.vueRes);
   $("r-res").dataset.affichage = A.vueRes;
-  $("r-recents-vide").classList.toggle("cache", !(A.vueRes === "resultats" && !n));
+  // pendant un lot, seules les cases de chargement s'affichent (jamais le message « vide »)
+  $("r-recents-vide").classList.toggle("cache", !(A.vueRes === "resultats" && !n && !enCours));
+  requestAnimationFrame(ajusterLots);
 }
 function choisirAffichageRes(v) { A.vueRes = v; majBasculeRes(); ajusterLots(); }
 
