@@ -134,6 +134,8 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
 .lora{padding:12px 0;border-bottom:1px solid var(--trait)}
 .lora:last-of-type{border-bottom:0}
 .lora .tete{display:flex;align-items:center;gap:10px}
+.lora .moitie{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.lora .moitie small{color:var(--texte-2);font-size:12px}
 .lora .tete .nom{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lora.eteint .nom,.lora.eteint .curseur{opacity:.4}
 .curseur{display:flex;align-items:center;gap:12px;margin-top:6px}
@@ -1120,7 +1122,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-b049e153b1d0.tgz", sha: "b049e153b1d0a440e5fdd1093dd10f7b9c82d61b9e9e0833a84b2cdf8b37faec"};
+const PAQUET = {fichier: "pod-f8b1ca3b2737.tgz", sha: "f8b1ca3b27379df0d0b62b5c2adfb74a0144d8090cd8789636b7b4c1497e805b"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
@@ -3095,6 +3097,19 @@ function rendreAnimer() {
   if (AN.grainefixe && document.activeElement !== $("a-graine")) $("a-graine").value = AN.graine ?? "";
   rendreLorasAni();
 }
+// LoRA Wan 2.2 dont Studio n'a pas trouvé l'autre moitié (publiée par ex. comme une autre version Civitai) :
+// on la choisit ici parmi les LoRA vidéo installés, sinon il ne s'applique qu'à sa moitié.
+function moitieAni(x, l, V) {
+  if (!l || !l.seul) return "";
+  const autre = l.seul === "haut" ? "bas" : "haut";
+  const fichiers = (V.fichiers_lora || []).filter((f) => f.rel !== l.id);
+  if (x.autre && !fichiers.some((f) => f.rel === x.autre)) delete x.autre;
+  const sel = el("select", {"aria-label": `Moitié ${autre} bruit`, onchange: (ev) => { if (ev.target.value) x.autre = ev.target.value; else delete x.autre; sauverAN(); }});
+  sel.append(el("option", {value: "", texte: `Aucune (${l.seul} bruit seulement)`}));
+  for (const f of fichiers) sel.append(el("option", {value: f.rel, texte: f.nom + (f.nom !== f.fichier.replace(/\.safetensors$/, "") ? ` (${f.fichier})` : "")}));
+  sel.value = x.autre || "";
+  return el("label", {class: "moitie"}, el("small", {texte: `Ce fichier est la moitié « ${l.seul} bruit ». Fichier « ${autre} bruit » :`}), sel);
+}
 function rendreLorasAni() {
   const V = videosInv(), box = $("a-loras"); box.textContent = "";
   const connus = new Map(V.loras.map((l) => [l.id, l]));
@@ -3108,7 +3123,7 @@ function rendreLorasAni() {
     box.append(el("div", {class: "lora" + (x.actif === false ? " eteint" : "")},
       el("div", {class: "tete"}, el("span", {class: "nom", texte: connus.get(x.id).nom}), bascule,
         el("button", {class: "croix", type: "button", "aria-label": "Retirer", texte: "✕", onclick: () => { AN.loras.splice(i, 1); sauverAN(); rendreLorasAni(); }})),
-      el("div", {class: "curseur"}, curseur, sortie)));
+      el("div", {class: "curseur"}, curseur, sortie), moitieAni(x, connus.get(x.id), V)));
   });
   const sel = $("a-ajout-lora"); sel.textContent = "";
   const restants = V.loras.filter((l) => !AN.loras.some((x) => x.id === l.id));
