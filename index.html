@@ -593,6 +593,12 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
    <div class="reglages" id="f-reglages">
     <div class="titre-plus"><h2>Plus de réglages</h2><button class="croix" type="button" data-fermer-plus aria-label="Fermer">✕</button></div>
     <div class="panneau gauche">
+    <div id="f-reco" class="bloc cache">
+      <p><b>fineporn v5 (Krea 2), le modèle conseillé pour Créer</b></p>
+      <p class="tres-discret">Fine-tune de Krea 2, depuis Civitai, vérifié par son empreinte. S'ils manquent, l'encodeur et le VAE officiels de Krea 2 sont ajoutés, ainsi que le LoRA de variété SDA (désactivable ici avec « Plus de variété »). Demande ta clé Civitai (Réglages).</p>
+      <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="f-reco-liste" checked><span></span></label></div>
+      <button class="bouton principal plein" type="button" id="f-reco-btn">Installer fineporn v5</button>
+    </div>
     <label class="champ"><span>Workflow</span><select id="f-workflow"></select></label>
     <div id="f-std-haut">
     <label class="champ"><span>Modèle</span><select id="f-modele"></select></label>
@@ -1114,7 +1120,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-79f9e85d27b9.tgz", sha: "79f9e85d27b9d9168992402ff5e8514691082a67a3372827ddbc145c37e32d9b"};
+const PAQUET = {fichier: "pod-b049e153b1d0.tgz", sha: "b049e153b1d0a440e5fdd1093dd10f7b9c82d61b9e9e0833a84b2cdf8b37faec"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
@@ -1581,6 +1587,7 @@ function rendre() {
   rendreTravaux();
   rendreOfficiels();
   if (A.vue === "animer") { const b = $("a-installer-btn"), inst = !!installWanEnCours(); if (b.disabled !== inst) rendreAnimer(); }
+  rendreRecoCreer();
   rendreGenerer();
   if (!$("feuille-session").classList.contains("cache")) rendreSession();
   const actifs = A.etat ? A.etat.travaux.filter((t) => t.type !== "generation" && t.type !== "analyse" && t.type !== "audit" && (t.etat === "encours" || t.etat === "attente")).length : 0;
@@ -2320,17 +2327,8 @@ async function annulerTelechargement(t, bouton) {
 }
 
 function rendreOfficiels() {
-  const box = $("m-officiels"); box.textContent = "";
-  if (!A.modeles || A.modeles.qwen21) return;
-  const inst = installQwenEnCours();
-  if (inst) return;   // affiché dans « Téléchargements »
-  const liste = el("input", {type: "checkbox", checked: true});
-  box.append(el("h2", {texte: "Modèle officiel conseillé"}), el("div", {class: "bloc"},
-    el("p", {}, el("b", {texte: "Qwen Image 2.1"})),
-    el("p", {class: "tres-discret", texte: "Le modèle de retouche par consigne le plus avancé à ce jour, et un bon modèle de création. Modèle int8, encodeur de texte, VAE et LoRA Turbo (Comfy-Org, Hugging Face) : environ 18 Go, chaque fichier vérifié par son empreinte. Licence Qwen Research (usage personnel)."}),
-    el("div", {class: "interrupteur"}, el("div", {}, el("b", {texte: "Ajouter à ma liste"}), el("small", {texte: "Réinstallé automatiquement aux prochaines sessions"})),
-      el("label", {class: "bascule"}, liste, el("span"))),
-    el("button", {class: "bouton principal plein", type: "button", texte: "Installer Qwen Image 2.1", onclick: () => installerQwen(liste.checked)})));
+  // Chaque onglet propose son modèle conseillé : Créer (fineporn v5), Retoucher (Qwen Image 2.1), Animer (Wan 2.2).
+  $("m-officiels").textContent = "";
 }
 
 function rendreModeles() {
@@ -3035,6 +3033,29 @@ function choisirVue(v) {
 
 
 
+
+// ------------------------------------------------------------ modèle conseillé de Créer : fineporn v5 (Krea 2)
+const FINEPORN = {lien: "https://civitai.red/models/2762538?modelVersionId=3361846", nom: "fineporn v5"};
+function finepornInstalle() {
+  return !!(A.modeles && A.modeles.principaux.some((m) => (m.source || "").includes("2762538") || /fineporn/i.test(`${m.nom} ${m.origine || ""} ${m.fichier}`)));
+}
+function installFinepornEnCours() {
+  return A.etat && A.etat.travaux.find((t) => t.type === "telechargement" && t.titre === FINEPORN.nom && (t.etat === "attente" || t.etat === "encours"));
+}
+function rendreRecoCreer() {
+  const inst = installFinepornEnCours();
+  $("f-reco").classList.toggle("cache", !A.modeles || finepornInstalle());
+  $("f-reco-btn").disabled = !!inst;
+  $("f-reco-btn").textContent = inst ? "Installation en cours… (voir Modèles)" : "Installer fineporn v5";
+}
+async function installerFineporn() {
+  if (!S.cles.civitai) { toast("Ajoute d'abord ta clé Civitai dans Réglages.", true); ouvrirFeuille("reglages"); return; }
+  if (!(await confirmer("Installer fineporn v5 ?", "Téléchargé depuis Civitai sur le disque du Pod et vérifié par son empreinte ; la variante est choisie selon la carte du Pod. Les composants officiels de Krea 2 et le LoRA de variété SDA sont ajoutés s'ils manquent.", "Installer", false))) return;
+  if ($("f-reco-liste").checked && ajouterListe(FINEPORN)) { sauver(); rendreListe(); }
+  try { await A.canal.appel("installer_liste", {elements: [FINEPORN], jetons: jetons()}); toast("Installation de fineporn v5 lancée."); boucle(); }
+  catch (e) { toast(e.message, true); }
+}
+
 // ------------------------------------------------------------ Animer : image → vidéo (Wan 2.2)
 const AN_DEFAUTS = {modele: null, prompt: "", negatif: "", duree: 5, qualite: "480p", rapide: true, nombre: 1, loras: [],
   steps: 20, cfg: 3.5, grainefixe: false, graine: null};
@@ -3188,6 +3209,10 @@ function puce(texte, action, aria) { return el("button", {class: "puce-rapide", 
 const SIG_RAPIDES = {};
 function majRapides() {
   const listes = {f: [], r: [], a: []};
+  // modèle conseillé pas encore installé : une pastille en tête, qui ouvre son bloc d'installation
+  if (!$("f-reco").classList.contains("cache")) listes.f.push(["i", "＋ fineporn v5", () => ouvrirPlus("f", "f-reco-btn"), "Installer le modèle conseillé fineporn v5"]);
+  if (!$("r-qwen").classList.contains("cache")) listes.r.push(["i", "＋ Qwen 2.1", () => ouvrirPlus("r", "r-qwen-installer"), "Installer le modèle conseillé Qwen Image 2.1"]);
+  if (!$("a-installer").classList.contains("cache")) listes.a.push(["i", "＋ Wan 2.2", () => ouvrirPlus("a", "a-installer-btn"), "Installer Wan 2.2"]);
   const wfF = !$("f-wf").classList.contains("cache"), wfR = !$("r-wf").classList.contains("cache");
   // Créer
   const selF = wfF ? $("f-workflow") : $("f-modele"), optF = selF.selectedOptions[0];
@@ -3215,7 +3240,7 @@ function majRapides() {
   listes.r.push(["p", "Réglages", () => ouvrirPlus("r"), "Plus de réglages"]);
   // Animer
   const V = videosInv(), mA = V.modeles.find((x) => x.id === AN.modele);
-  listes.a = [];
+
   listes.a.push(["m", court(mA ? mA.nom : "Modèle"), () => ouvrirPlus("a", "a-modele"), "Modèle vidéo"]);
   listes.a.push(["du", AN.duree + " s", () => { const o = [3, 5, 8]; AN.duree = o[(o.indexOf(Number(AN.duree)) + 1) % 3]; sauverAN(); rendreAnimer(); majRapides(); }, "Durée : " + AN.duree + " s"]);
   listes.a.push(["q", AN.qualite, () => { AN.qualite = AN.qualite === "480p" ? "720p" : "480p"; sauverAN(); rendreAnimer(); majRapides(); }, "Qualité : " + AN.qualite]);
@@ -3339,6 +3364,7 @@ function brancher() {
   for (const v of ["vue-creer", "vue-retoucher", "vue-animer"]) for (const ev of ["input", "change", "click"]) $(v).addEventListener(ev, () => setTimeout(() => { try { majRapides(); } catch (e) {} }, 0));
   if (observateurLots) for (const b of ["f-recents-bloc", "r-recents-bloc", "a-recents-bloc", "f-res", "r-res", "a-res"]) observateurLots.observe($(b));
   // Animer
+  $("f-reco-btn").onclick = installerFineporn;
   $("a-importer").onclick = () => definirSourceAnim("fichier");
   $("a-galerie").onclick = () => definirSourceAnim("galerie");
   $("a-changer").onclick = () => { AN.source = null; rendreAnimer(); };
