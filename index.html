@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://*.proxy.runpod.net; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://*.proxy.runpod.net; img-src 'self' blob: data:; media-src blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -378,6 +378,24 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .ref-ajout{aspect-ratio:1;border-radius:10px;border:1px dashed var(--trait);background:transparent;color:var(--texte-2);font-size:12px;padding:4px}
 .ref-ajout:active{transform:scale(.96);filter:brightness(.82)}
 .zone-texte{position:relative}
+/* Animer */
+.zone-anim{display:flex;flex-direction:column;min-height:0}
+#a-source{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:0;flex:1}
+#a-source img{flex:1;min-height:0;max-width:100%;width:auto;object-fit:contain;border-radius:10px;background:var(--fond-scene)}
+#a-vide{margin:0}
+.res[data-affichage=resultats] .zone-anim,.res[data-affichage=image] #a-recents-bloc{display:none!important}
+#a-recents-vide{flex:1;display:grid;place-items:center}
+#vue-animer .zone-anim{flex:1;min-height:0}
+#a-recents-bloc{flex:1;min-height:0;display:flex;flex-direction:column}
+#a-recents{flex:1;min-height:0}
+.vignette.video{position:relative}
+.badge-video{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(13,17,23,.72);
+  border:1px solid rgba(255,255,255,.35);pointer-events:none}
+.badge-video::after{content:"";position:absolute;left:18px;top:14px;border-style:solid;border-width:9px 0 9px 14px;border-color:transparent transparent transparent #fff}
+.visionneuse .scene video{width:100%;height:100%;max-height:100%;object-fit:contain;display:block;background:#000}
+.visionneuse .actions .bouton{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.visionneuse .actions .bouton.icone{flex:0 0 48px!important}
+@media (max-width:420px){.visionneuse .actions{gap:6px;padding-inline:8px}.visionneuse .actions .bouton{font-size:13px;padding:12px 4px}}
 .zone-texte textarea{padding-right:44px}
 .vider-prompt{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:50%;border:1px solid var(--trait);background:var(--surface-2);
   color:var(--texte-2);font-size:13px;display:grid;place-items:center;padding:0}
@@ -800,6 +818,90 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     </div>
   </section>
 
+  <!-- ================= ANIMER (image → vidéo, Wan 2.2) ================= -->
+  <section class="vue atelier" id="vue-animer">
+   <div class="res" id="a-res">
+    <div class="segments bascule-res cache" id="a-bascule" role="group" aria-label="Affichage">
+      <button type="button" data-res="image">Image à animer</button><button type="button" data-res="resultats" id="a-bascule-res">Vidéos</button>
+    </div>
+    <div class="zone-anim">
+    <div id="a-vide" class="depot">
+      <p><b>Choisis l'image à animer</b></p>
+      <p class="tres-discret">Une image de la session ou une photo. Elle donne la première image de la vidéo ; le texte décrit le mouvement. Photos réduites et sans métadonnées avant l'envoi. Personnes réelles : uniquement avec leur accord.</p>
+      <div class="rangee"><button class="bouton" type="button" id="a-importer">Importer une photo</button><button class="bouton" type="button" id="a-galerie">Galerie</button></div>
+    </div>
+    <div id="a-source" class="cache">
+      <img id="a-img" alt="Image à animer">
+      <div class="rangee"><button class="bouton petit" type="button" id="a-changer">Autre image</button></div>
+    </div>
+    </div>
+    <div id="a-recents-bloc" class="cache"><div class="res-tete"><span>Vidéos du lot</span><span class="tres-discret" id="a-lot-info"></span></div><div class="recents" id="a-recents"></div></div>
+    <p class="vide cache" id="a-recents-vide">Les vidéos du lot apparaîtront ici.</p>
+   </div>
+   <div class="reglages" id="a-reglages">
+    <div class="titre-plus"><h2>Plus de réglages</h2><button class="croix" type="button" data-fermer-plus aria-label="Fermer">✕</button></div>
+    <div class="panneau gauche">
+    <div id="a-installer" class="bloc cache">
+      <p><b>Wan 2.2 image → vidéo</b></p>
+      <p class="tres-discret">Modèle vidéo officiel (Apache 2.0) : ses deux moitiés en fp8, le LoRA rapide lightx2v, le VAE et l'encodeur de texte, depuis les dépôts Comfy-Org sur Hugging Face. Environ 38 Go sur le disque du Pod, chaque fichier vérifié par son empreinte.</p>
+      <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="a-installer-liste" checked><span></span></label></div>
+      <button class="bouton principal plein" type="button" id="a-installer-btn">Installer Wan 2.2</button>
+    </div>
+    <label class="champ"><span>Modèle vidéo</span><select id="a-modele"></select></label>
+    <p class="tres-discret" id="a-modele-aide"></p>
+    <span class="maison-prompt" id="a-prompt-maison" hidden></span>
+    <div class="champ prompt">
+      <div class="ligne-champ"><label for="a-prompt">Mouvement</label><button class="lien" type="button" id="a-decrire">Décrire l'image</button></div>
+      <div class="zone-texte"><textarea id="a-prompt" rows="4" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Décris le mouvement : « elle se retourne lentement et sourit, la caméra s'approche »"></textarea><button class="vider-prompt cache" type="button" id="a-vider-prompt" aria-label="Vider le texte" title="Vider le texte">✕</button></div>
+      <p class="aide-variantes">Décris l'action, le mouvement de caméra et l'ambiance (en anglais, souvent mieux suivi).</p>
+    </div>
+    <h3>Durée</h3>
+    <div class="segments" id="a-duree" role="group" aria-label="Durée">
+      <button type="button" data-duree="3">3 s</button><button type="button" data-duree="5">5 s</button><button type="button" data-duree="8">8 s</button>
+    </div>
+    <h3>Qualité</h3>
+    <div class="segments" id="a-qualite" role="group" aria-label="Qualité">
+      <button type="button" data-qualite="480p">480p</button><button type="button" data-qualite="720p">720p</button>
+    </div>
+    <div class="interrupteur" id="a-rapide-ligne">
+      <div><b>Mode rapide</b><small>LoRA lightx2v : 4 étapes au lieu de 20, environ 5 fois plus vite</small></div>
+      <label class="bascule"><input type="checkbox" id="a-rapide"><span></span></label>
+    </div>
+    <h3>Nombre de vidéos</h3>
+    <div class="compteur"><button type="button" id="a-moins" aria-label="Moins">−</button><output id="a-nombre">1</output><button type="button" id="a-plus" aria-label="Plus">+</button></div>
+    </div>
+    <div class="panneau droite">
+    <label class="champ"><span>À éviter <em class="tres-discret">(sans mode rapide)</em></span>
+      <textarea id="a-negatif" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" style="min-height:70px" placeholder="Vide : liste officielle de Wan (flou, figé, mains ratées…)"></textarea></label>
+    <h3>LoRA vidéo</h3>
+    <div id="a-loras"></div>
+    <select id="a-ajout-lora" aria-label="Ajouter un LoRA vidéo"></select>
+    <details class="avance" id="a-avance">
+      <summary>Réglages fins</summary>
+      <div class="grille-2">
+        <label class="champ"><span>Étapes</span><input type="number" id="a-steps" inputmode="numeric" min="2" max="80"></label>
+        <label class="champ"><span>CFG</span><input type="number" id="a-cfg" inputmode="decimal" step="0.1" min="1" max="10"></label>
+      </div>
+      <p class="tres-discret">Le mode rapide impose 4 étapes et un CFG de 1.</p>
+      <div class="interrupteur">
+        <div><b>Graine fixe</b><small>Même graine = même vidéo avec les mêmes réglages</small></div>
+        <label class="bascule"><input type="checkbox" id="a-graine-fixe"><span></span></label>
+      </div>
+      <input type="number" id="a-graine" inputmode="numeric" placeholder="Graine" class="cache">
+    </details>
+    <p class="tres-discret" style="margin-top:12px">Vidéo à 16 images/s. Sur une RTX 5090, compter de l'ordre d'une à deux minutes en mode rapide 480p, nettement plus en 720p ou sans mode rapide (non vérifié).</p>
+    </div>
+   </div>
+    <div class="composeur" id="a-composeur">
+     <div class="puces-rapides" id="a-rapides" role="group" aria-label="Réglages rapides"></div>
+     <div class="emplacement-prompt" id="a-prompt-tel"></div>
+    <div class="action">
+      <button class="generer" type="button" id="btn-animer"><i class="avance-gen" id="ani-avance"></i><span id="ani-texte">Animer</span></button>
+      <button class="stop cache" type="button" id="btn-stop-a">Arrêter</button>
+    </div>
+    </div>
+  </section>
+
   <!-- ================= IMAGES ================= -->
   <section class="vue" id="vue-images">
     <div class="rangee" style="margin-top:8px">
@@ -837,6 +939,8 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4"/></svg>Créer</button>
   <button type="button" role="tab" data-vue="retoucher" aria-selected="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5l5 5L10 19H5v-5z"/><path d="M12.5 6.5l5 5"/></svg>Retoucher</button>
+  <button type="button" role="tab" data-vue="animer" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.6-2.8z"/></svg>Animer</button>
   <button type="button" role="tab" data-vue="images" aria-selected="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M3.5 16l5-5 4 4 3-3 5 5"/></svg>Images</button>
   <button type="button" role="tab" data-vue="modeles" aria-selected="false">
@@ -982,12 +1086,13 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <!-- visionneuse -->
 <div class="visionneuse cache" id="visionneuse" role="dialog" aria-label="Image">
   <div class="haut"><span class="tres-discret" id="v-position"></span><button class="croix" type="button" id="v-fermer" aria-label="Fermer">✕</button></div>
-  <div class="scene" id="v-scene"><img id="v-img" alt=""></div>
+  <div class="scene" id="v-scene"><img id="v-img" alt=""><video id="v-video" class="cache" controls playsinline loop preload="metadata"></video></div>
   <div class="info" id="v-info"></div>
   <div class="actions">
     <button class="bouton" type="button" id="v-enregistrer">Enregistrer</button>
     <button class="bouton" type="button" id="v-reutiliser">Réutiliser</button>
     <button class="bouton" type="button" id="v-retoucher">Retoucher</button>
+    <button class="bouton" type="button" id="v-animer">Animer</button>
     <button class="bouton danger icone" type="button" id="v-supprimer" aria-label="Supprimer"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg></button>
   </div>
 </div>
@@ -1009,7 +1114,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-de7e034d7765.tgz", sha: "de7e034d776533962e41d04411ca2c7b536b8de1d34579e5b05c4294d5be151f"};
+const PAQUET = {fichier: "pod-26306a7ff9e4.tgz", sha: "26306a7ff9e4833db6a662b18ffceabe25022132a3043296e2b98bc24f75576a"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
@@ -1178,7 +1283,7 @@ class Canal {
 // ------------------------------------------------------------ état de l'application
 const A = {canal: null, etat: null, modeles: null, images: [], versionImages: -1, versionModeles: -1, demandeModeles: 0, lotPrevu: {},
   vue: "creer", vignettes: new Map(), pleines: new Map(), analyse: null, analyseTravail: null, travauxVus: new Set(),
-  formulaireImage: null, genTravail: null, retTravail: null, nouvellesImages: 0, derniersIds: [], derniersRet: [], connexion: "aucune",
+  formulaireImage: null, genTravail: null, retTravail: null, nouvellesImages: 0, derniersIds: [], derniersRet: [], derniersAni: [], aniTravail: null, vueAni: "image", connexion: "aucune",
   descTravail: null, descImage: null, descCible: "f-prompt", outilTravail: null, acces: null, demandesVues: new Set(), appareils: []};
 
 function urlPod(id) { return `https://${id}-8080.proxy.runpod.net`; }
@@ -1336,7 +1441,7 @@ async function suivreVersions() {
     try {
       const m = await A.canal.appel("modeles");
       if (demande !== A.demandeModeles) return;
-      A.modeles = m; A.versionModeles = version; rendreModeles(); rendreFormulaireOptions(); rendreRetoucheOptions();
+      A.modeles = m; A.versionModeles = version; rendreModeles(); rendreFormulaireOptions(); rendreRetoucheOptions(); rendreAnimer();
     } catch (e) {}
   }
   if (A.etat.images !== A.versionImages) {
@@ -1412,7 +1517,7 @@ function finSession(message) {
   for (const u of A.vignettes.values()) URL.revokeObjectURL(u);
   for (const v of A.pleines.values()) URL.revokeObjectURL(v.url);
   A.vignettes.clear(); A.pleines.clear(); A.analyse = null; A.formulaireImage = null; A.travauxVus.clear(); A.demandesVues.clear();
-  A.derniersIds = []; A.derniersRet = []; RT.source = null; RT.references = []; A.descImage = null; A.reidRef = null; rendreRetouche(); rendreRecents();
+  A.derniersIds = []; A.derniersRet = []; A.derniersAni = []; RT.source = null; RT.references = []; AN.source = null; A.descImage = null; A.reidRef = null; rendreRetouche(); rendreAnimer(); rendreRecents();
   if (message) toast(message);
   rendre(); rendreGalerie(); rendreModeles(); rendreAnalyse();
 }
@@ -1463,18 +1568,19 @@ function reprendreAuLancement() {
 }
 
 // ------------------------------------------------------------ rendu général
-const VUES = ["creer", "retoucher", "images", "modeles"];
+const VUES = ["creer", "retoucher", "animer", "images", "modeles"];
 function rendre() {
   const enSession = sessionActive();
   const pret = enSession && A.etat && A.connexion === "ok" && A.etat.phase !== "erreur" && A.etat.etape >= 3;
   $("vue-accueil").classList.toggle("active", !pret);
   for (const v of VUES) $("vue-" + v).classList.toggle("active", pret && A.vue === v);
   $("onglets").classList.toggle("cache", !pret);
-  document.body.classList.toggle("atelier", !!pret && (A.vue === "creer" || A.vue === "retoucher"));
+  document.body.classList.toggle("atelier", !!pret && (A.vue === "creer" || A.vue === "retoucher" || A.vue === "animer"));
   if (!pret) rafraichirAccueil();
   majPastille();
   rendreTravaux();
   rendreOfficiels();
+  if (A.vue === "animer") { const b = $("a-installer-btn"), inst = !!installWanEnCours(); if (b.disabled !== inst) rendreAnimer(); }
   rendreGenerer();
   if (!$("feuille-session").classList.contains("cache")) rendreSession();
   const actifs = A.etat ? A.etat.travaux.filter((t) => t.type !== "generation" && t.type !== "analyse" && t.type !== "audit" && (t.etat === "encours" || t.etat === "attente")).length : 0;
@@ -1592,7 +1698,7 @@ function fermerFeuilles() {
   if (A.choixAnnule && !$("feuille-galerie").classList.contains("cache")) { const f = A.choixAnnule; A.choixAnnule = null; f(); }
   $("voile-fond").classList.add("cache");
   for (const f of document.querySelectorAll(".feuille")) f.classList.add("cache");
-  for (const v of ["vue-creer", "vue-retoucher"]) $(v).classList.remove("plus-ouvert");
+  for (const v of ["vue-creer", "vue-retoucher", "vue-animer"]) $(v).classList.remove("plus-ouvert");
 }
 
 function rendreSession() {
@@ -1713,7 +1819,7 @@ F = Object.assign(formulaireParDefaut(), S.form || {});
 let sauverFormMinuteur;
 function sauverForm() { clearTimeout(sauverFormMinuteur); sauverFormMinuteur = setTimeout(() => { S.form = F; sauver(); }, 400); }
 
-function modeleCourant() { return A.modeles && A.modeles.principaux.find((m) => m.rel === F.modele) || null; }
+function modeleCourant() { return A.modeles && A.modeles.principaux.find((m) => m.rel === F.modele && !m.video) || null; }
 function lorasCompatibles(m) { return A.modeles ? A.modeles.loras.filter((l) => !l.sda && !l.turbo && !l.reference && !l.adaptateur && !l.identite && (!m || !l.famille || l.famille === m.famille)) : []; }
 function loraSda() { return A.modeles && A.modeles.loras.find((l) => l.sda) || null; }
 
@@ -1726,7 +1832,7 @@ function appliquerDefauts(m) {
 
 function rendreFormulaireOptions() {
   const sel = $("f-modele"); sel.textContent = "";
-  const prin = A.modeles ? A.modeles.principaux : [];
+  const prin = A.modeles ? A.modeles.principaux.filter((m) => !m.video) : [];
   if (!prin.length) sel.append(el("option", {value: "", texte: "Aucun modèle : ajoute-en un dans Modèles"}));
   for (const m of prin) {
     const lib = m.nom + (m.defauts ? " · " + m.defauts.variante : " · non pris en charge");
@@ -1906,18 +2012,21 @@ function majBarre(travailId, bouton, texte, avance, stop, libelle, ids, bloc, bo
   rendreRecents();
 }
 function rendreGenerer() {
-  try { majRapides(); majBasculeRes(); } catch (e) {}
+  try { majRapides(); majBasculeRes(); majBasculeAni(); } catch (e) {}
   majBarre(A.genTravail, $("btn-generer"), $("gen-texte"), $("gen-avance"), $("btn-stop"),
     F.nombre > 1 ? `Générer ${F.nombre} images` : "Générer", A.derniersIds, $("f-recents-bloc"));
   majBarre(A.retTravail, $("btn-retoucher"), $("ret-texte"), $("ret-avance"), $("btn-stop-r"),
     RT.nombre > 1 ? `Retoucher (${RT.nombre} images)` : "Retoucher", A.derniersRet, $("r-recents-bloc"));
+  majBarre(A.aniTravail, $("btn-animer"), $("ani-texte"), $("ani-avance"), $("btn-stop-a"),
+    AN.nombre > 1 ? `Animer (${AN.nombre} vidéos)` : "Animer", A.derniersAni, $("a-recents-bloc"));
 }
 // Créer et Retoucher n'affichent que le lot en cours (la galerie garde tout) : ses images en grand, et une case
 // d'attente pour chaque image encore à venir.
 const SIGNATURES_LOT = {};
 function rendreRecents() {
   for (const [ids, boite, bloc, travailId, info] of [[A.derniersIds, "f-recents", "f-recents-bloc", A.genTravail, "f-lot-info"],
-                                                      [A.derniersRet, "r-recents", "r-recents-bloc", A.retTravail, "r-lot-info"]]) {
+                                                      [A.derniersRet, "r-recents", "r-recents-bloc", A.retTravail, "r-lot-info"],
+                                                      [A.derniersAni, "a-recents", "a-recents-bloc", A.aniTravail, "a-lot-info"]]) {
     const t = A.etat && A.etat.travaux.find((x) => x.id === travailId);
     const prevu = A.lotPrevu[boite];
     if (t && prevu && prevu.id === t.id && !["encours", "attente"].includes(t.etat)) delete A.lotPrevu[boite];   // lot fini
@@ -1925,7 +2034,8 @@ function rendreRecents() {
     // nouvelle du Pod partie juste avant la création du lot : on garde les cases d'attente prévues
     if (!t && A.lotPrevu[boite] && A.lotPrevu[boite].id === travailId) attente = Math.max(0, A.lotPrevu[boite].total - ids.length);
     const n = ids.length + attente;
-    $(info).textContent = !n ? "" : attente ? `${ids.length} / ${ids.length + attente}` : `${ids.length} image${ids.length > 1 ? "s" : ""}`;
+    const mot = boite === "a-recents" ? "vidéo" : "image";
+    $(info).textContent = !n ? "" : attente ? `${ids.length} / ${ids.length + attente}` : `${ids.length} ${mot}${ids.length > 1 ? "s" : ""}`;
     if (boite === "f-recents") $("f-recents-vide").classList.toggle("cache", !!n);
     $(bloc).classList.toggle("cache", !n);
     const sig = ids.join(",") + "|" + attente;
@@ -1945,6 +2055,14 @@ function nouveauLot(cote) {
 }
 
 function remplirDepuis(r, nombre = 1) {
+  if (r.video) {
+    const V = videosInv();
+    if (V.modeles.some((m) => m.id === r.modele)) AN.modele = r.modele;
+    Object.assign(AN, {prompt: r.prompt || "", negatif: r.negatif || "", duree: r.duree || 5, qualite: r.qualite || "480p",
+      rapide: !!r.rapide, nombre, steps: r.steps || 20, cfg: r.cfg || 3.5, grainefixe: true, graine: r.graine,
+      loras: (r.loras || []).filter((x) => x.id).map((x) => ({id: x.id, poids: x.poids, actif: true}))});
+    sauverAN(); choisirVue("animer"); rendreAnimer(); window.scrollTo({top: 0}); return;
+  }
   if (r.mode === "workflow") {
     const w = S.workflows.find((x) => x.nom === r.workflow);
     if (!w) { toast(`Le workflow « ${r.workflow} » n'est plus sur cet appareil.`, true); return false; }
@@ -1976,15 +2094,20 @@ async function urlVignette(id) {
 }
 async function imagePleine(id) {
   if (A.pleines.has(id)) return A.pleines.get(id);
-  const r = await A.canal.appel("image", {id, mini: false}, 60000);
   const meta = A.images.find((x) => x.id === id);
+  const video = !!(meta && meta.video);
+  const r = await A.canal.appel("image", {id, mini: false}, video ? 240000 : 60000);
   const d = new Date((meta ? meta.cree : Date.now() / 1000) * 1000);
   const nom = `studio_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}_` +
-    `${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}${String(d.getSeconds()).padStart(2, "0")}_${id.slice(0, 4)}.png`;
-  const fichier = new File([r.binaire], nom, {type: "image/png"});
-  const v = {url: URL.createObjectURL(fichier), fichier};
+    `${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}${String(d.getSeconds()).padStart(2, "0")}_${id.slice(0, 4)}.${video ? "mp4" : "png"}`;
+  const fichier = new File([r.binaire], nom, {type: video ? "video/mp4" : "image/png"});
+  const v = {url: URL.createObjectURL(fichier), fichier, taille: fichier.size};
   A.pleines.set(id, v);
-  if (A.pleines.size > 24) { const [k, ancien] = A.pleines.entries().next().value; URL.revokeObjectURL(ancien.url); A.pleines.delete(k); }
+  // cache en mémoire de l'appareil : 24 éléments et 300 Mo au plus (les vidéos pèsent lourd sur un iPhone)
+  let total = 0; for (const x of A.pleines.values()) total += x.taille || 0;
+  while (A.pleines.size > 1 && (A.pleines.size > 24 || total > 300e6)) {
+    const [k, ancien] = A.pleines.entries().next().value; URL.revokeObjectURL(ancien.url); A.pleines.delete(k); total -= ancien.taille || 0;
+  }
   return v;
 }
 const fileVignettes = []; let vignettesActives = 0;
@@ -2000,7 +2123,9 @@ async function pomperVignettes() {
 }
 function vignette(id, grand = false) {
   const img = el("img", {alt: ""});
-  const b = el("button", {class: "vignette attente", type: "button", "aria-label": "Ouvrir l'image", onclick: () => ouvrirVisionneuse(id)}, img);
+  const meta = A.images.find((x) => x.id === id), video = !!(meta && meta.video);
+  const b = el("button", {class: "vignette attente" + (video ? " video" : ""), type: "button", "aria-label": video ? "Ouvrir la vidéo" : "Ouvrir l'image", onclick: () => ouvrirVisionneuse(id)}, img);
+  if (video) { b.append(el("span", {class: "badge-video", "aria-hidden": "true"})); grand = false; }
   if (A.vignettes.has(id)) { img.src = A.vignettes.get(id); img.style.opacity = 1; b.classList.remove("attente"); }
   else chargerVignette(id, img, b);
   // lot en cours affiché en grand : l'image pleine définition remplace la miniature une fois arrivée
@@ -2040,14 +2165,28 @@ async function afficherVisionneuse() {
   $("v-info").textContent = `${r.prompt || ""}\n\n` + (r.mode === "workflow" ? `Workflow « ${r.workflow} » · ` : "") +
     [`Graine ${r.graine}`, r.steps ? `${r.steps} étapes` : null, r.cfg !== null && r.cfg !== undefined ? `CFG ${r.cfg}` : null, `${im.largeur}×${im.hauteur}`].filter(Boolean).join(" · ") +
     ((r.loras || []).filter((x) => x.actif !== false).length ? " · " + r.loras.filter((x) => x.actif !== false).length + " LoRA" : "") + (r.sda_lora ? " · SDA" : "");
+  if (im.video) $("v-info").textContent = `${r.prompt || ""}\n\nVidéo · ${r.duree} s · ${r.qualite} (${im.largeur}×${im.hauteur}) · ${r.fps} i/s · ` +
+    `${r.rapide ? "mode rapide" : r.steps + " étapes, CFG " + r.cfg} · graine ${r.graine}` + ((r.loras || []).length ? ` · ${r.loras.length} LoRA` : "");
   $("v-info").style.whiteSpace = "pre-wrap";
-  const img = $("v-img");
+  const img = $("v-img"), vid = $("v-video");
+  img.classList.toggle("cache", !!im.video); vid.classList.toggle("cache", !im.video);
+  vid.pause(); vid.removeAttribute("src");
   img.src = A.vignettes.get(im.id) || "";
+  if (im.video) vid.poster = A.vignettes.get(im.id) || "";
   $("v-enregistrer").disabled = true;
-  try { const v = await imagePleine(im.id); if (A.images[vIndex] === im) { img.src = v.url; $("v-enregistrer").disabled = false; } }
-  catch (e) { toast("Image non chargée : " + e.message, true); }
+  try {
+    const v = await imagePleine(im.id);
+    if (A.images[vIndex] === im) {
+      if (im.video) { vid.src = v.url; vid.play().catch(() => {}); } else img.src = v.url;
+      $("v-enregistrer").disabled = false;
+    }
+  }
+  catch (e) { toast((im.video ? "Vidéo" : "Image") + " non chargée : " + e.message, true); }
 }
-function fermerVisionneuse() { $("visionneuse").classList.add("cache"); $("v-img").removeAttribute("src"); }
+function fermerVisionneuse() {
+  $("visionneuse").classList.add("cache"); $("v-img").removeAttribute("src");
+  const vid = $("v-video"); vid.pause(); vid.removeAttribute("src"); vid.load();
+}
 async function partager(fichiers) {
   if (navigator.canShare && navigator.canShare({files: fichiers})) {
     try { await navigator.share({files: fichiers}); } catch (e) { if (e.name !== "AbortError") toast("Enregistrement impossible : " + e.message, true); }
@@ -2296,8 +2435,9 @@ async function importerPhoto(fichier, megapixels) {
 }
 async function importerGalerie(idImage) {
   const r = await A.canal.appel("importer", {depuis: idImage});
-  const v = await imagePleine(idImage);
-  return {id: r.id, largeur: r.largeur, hauteur: r.hauteur, url: v.url, galerie: idImage};
+  const meta = A.images.find((x) => x.id === idImage);
+  const url = meta && meta.video ? await urlVignette(idImage) : (await imagePleine(idImage)).url;   // vidéo : sa 1re image
+  return {id: r.id, largeur: r.largeur, hauteur: r.hauteur, url, galerie: idImage};
 }
 function choisirDansGalerie() {
   return new Promise((res) => {
@@ -2893,11 +3033,132 @@ function choisirVue(v) {
 }
 
 
+
+// ------------------------------------------------------------ Animer : image → vidéo (Wan 2.2)
+const AN_DEFAUTS = {modele: null, prompt: "", negatif: "", duree: 5, qualite: "480p", rapide: true, nombre: 1, loras: [],
+  steps: 20, cfg: 3.5, grainefixe: false, graine: null};
+const AN = Object.assign({}, AN_DEFAUTS, S.anime || {}, {source: null});
+let sauverANMinuteur = null;
+function sauverAN() { clearTimeout(sauverANMinuteur); sauverANMinuteur = setTimeout(() => {
+  const {source, ...reste} = AN; S.anime = reste; sauver(); }, 400); }
+function videosInv() { return (A.modeles && A.modeles.videos) || {modeles: [], loras: [], rapide: false, composants: false, officiel: false}; }
+function installWanEnCours() {
+  return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "wan22" && (t.etat === "attente" || t.etat === "encours"));
+}
+function rendreAnimer() {
+  const V = videosInv(), inst = installWanEnCours();
+  $("a-installer").classList.toggle("cache", V.officiel || !A.modeles);
+  $("a-installer-btn").disabled = !!inst;
+  $("a-installer-btn").textContent = inst ? "Installation en cours… (voir Modèles)" : "Installer Wan 2.2";
+  const sel = $("a-modele"); sel.textContent = "";
+  if (!V.modeles.length) sel.append(el("option", {value: "", texte: "Aucun modèle vidéo : installe Wan 2.2"}));
+  for (const m of V.modeles) sel.append(el("option", {value: m.id, texte: m.nom}));
+  if (!V.modeles.some((m) => m.id === AN.modele)) AN.modele = V.modeles.length ? (V.modeles.find((m) => m.officiel) || V.modeles[0]).id : null;
+  sel.value = AN.modele || "";
+  const m = V.modeles.find((x) => x.id === AN.modele);
+  $("a-modele-aide").textContent = !m ? "" : !V.composants ? "Encodeur UMT5 ou VAE manquant : installe Wan 2.2." :
+    m.officiel ? "Wan 2.2 14B officiel (fp8) · deux passes, haut puis bas bruit" : "Fine-tune Wan 2.2 (paire haut / bas bruit)";
+  $("a-vide").classList.toggle("cache", !!AN.source);
+  $("a-source").classList.toggle("cache", !AN.source);
+  if (AN.source && $("a-img").getAttribute("src") !== AN.source.url) $("a-img").src = AN.source.url;
+  for (const b of $("a-duree").querySelectorAll("button")) b.setAttribute("aria-pressed", Number(b.dataset.duree) === Number(AN.duree));
+  for (const b of $("a-qualite").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.qualite === AN.qualite);
+  $("a-rapide").checked = !!AN.rapide && V.rapide; $("a-rapide").disabled = !V.rapide;
+  $("a-nombre").textContent = AN.nombre;
+  if ($("a-prompt").value !== AN.prompt) $("a-prompt").value = AN.prompt; majVider("a");
+  if ($("a-negatif").value !== AN.negatif) $("a-negatif").value = AN.negatif;
+  $("a-steps").value = AN.rapide && V.rapide ? 4 : AN.steps; $("a-cfg").value = AN.rapide && V.rapide ? 1 : AN.cfg;
+  $("a-steps").disabled = $("a-cfg").disabled = !!(AN.rapide && V.rapide);
+  $("a-graine-fixe").checked = !!AN.grainefixe; $("a-graine").classList.toggle("cache", !AN.grainefixe);
+  if (AN.grainefixe && document.activeElement !== $("a-graine")) $("a-graine").value = AN.graine ?? "";
+  rendreLorasAni();
+}
+function rendreLorasAni() {
+  const V = videosInv(), box = $("a-loras"); box.textContent = "";
+  const connus = new Map(V.loras.map((l) => [l.id, l]));
+  AN.loras = AN.loras.filter((x) => connus.has(x.id));
+  AN.loras.forEach((x, i) => {
+    const sortie = el("output", {texte: Number(x.poids).toFixed(2)});
+    const curseur = el("input", {type: "range", min: "-1", max: "2", step: "0.05", value: x.poids, "aria-label": "Poids",
+      oninput: (ev) => { x.poids = parseFloat(ev.target.value); sortie.textContent = x.poids.toFixed(2); sauverAN(); }});
+    const bascule = el("label", {class: "bascule"}, el("input", {type: "checkbox", checked: x.actif !== false, "aria-label": "Activer",
+      onchange: (ev) => { x.actif = ev.target.checked; sauverAN(); rendreLorasAni(); }}), el("span"));
+    box.append(el("div", {class: "lora" + (x.actif === false ? " eteint" : "")},
+      el("div", {class: "tete"}, el("span", {class: "nom", texte: connus.get(x.id).nom}), bascule,
+        el("button", {class: "croix", type: "button", "aria-label": "Retirer", texte: "✕", onclick: () => { AN.loras.splice(i, 1); sauverAN(); rendreLorasAni(); }})),
+      el("div", {class: "curseur"}, curseur, sortie)));
+  });
+  const sel = $("a-ajout-lora"); sel.textContent = "";
+  const restants = V.loras.filter((l) => !AN.loras.some((x) => x.id === l.id));
+  sel.append(el("option", {value: "", texte: restants.length ? "+ Ajouter un LoRA vidéo" : V.loras.length ? "Tous les LoRA sont ajoutés" : "Aucun LoRA Wan 2.2 installé"}));
+  for (const l of restants) sel.append(el("option", {value: l.id, texte: l.nom}));
+  sel.disabled = !restants.length;
+}
+async function definirSourceAnim(origine, idGalerie) {
+  try {
+    let src;
+    if (origine === "galerie") {
+      const id = idGalerie || await choisirDansGalerie(); if (!id) return;
+      toast("Préparation de l'image…"); src = await importerGalerie(id);
+    } else {
+      const f = origine instanceof File ? origine : await choisirFichier(); if (!f) return;
+      toast("Envoi chiffré de la photo…"); src = await importerPhoto(f, 1.05);
+    }
+    finToast();
+    AN.source = src; A.vueAni = "image";
+    choisirVue("animer"); rendreAnimer(); majBasculeAni();
+  } catch (e) { toast("Image non chargée : " + e.message, true); }
+}
+async function installerWan(liste) {
+  if (!(await confirmer("Installer Wan 2.2 ?", "Environ 38 Go téléchargés depuis Hugging Face sur le disque du Pod : fichiers officiels Comfy-Org (licence Apache 2.0), chacun vérifié par son empreinte. Compte un quart d'heure à une demi-heure selon le Pod.", "Installer", false))) return;
+  try { await A.canal.appel("installer_officiel", {quoi: "wan22", liste, jetons: jetons()}); toast("Installation de Wan 2.2 lancée."); boucle(); }
+  catch (e) { toast(e.message, true); }
+}
+function demandeAnimer() {
+  const V = videosInv();
+  if (!AN.source) { toast("Choisis d'abord l'image à animer.", true); return null; }
+  if (!AN.modele) { toast("Installe d'abord Wan 2.2.", true); return null; }
+  if (!V.composants) { toast("Composants de Wan 2.2 manquants : installe Wan 2.2.", true); return null; }
+  const prompt = AN.prompt.trim();
+  if (!prompt) { toast("Décris le mouvement voulu.", true); $("a-prompt").focus(); return null; }
+  const base = AN.grainefixe && Number.isFinite(AN.graine) ? AN.graine : nouvelleGraine();
+  const graines = [], prompts = [];
+  for (let i = 0; i < AN.nombre; i++) { graines.push(base + i); prompts.push(variantes(prompt, prng(base + i))); }
+  return {reglages: {modele: AN.modele, source: AN.source.id, duree: AN.duree, qualite: AN.qualite, rapide: !!AN.rapide && V.rapide,
+    negatif: AN.negatif, loras: AN.loras, steps: AN.steps, cfg: AN.cfg}, prompts, graines};
+}
+async function animer() {
+  const dem = demandeAnimer(); if (!dem) return;
+  $("btn-animer").disabled = true;
+  try {
+    const r = await A.canal.appel("animer", dem, 90000);
+    A.aniTravail = r.travail; A.derniersAni = []; A.lotPrevu["a-recents"] = {id: r.travail, total: AN.nombre};
+    if (A.etat) A.etat.travaux.push({id: r.travail, type: "generation", etat: "encours", total: AN.nombre, faites: 0, images: []});
+    rendreGenerer(); boucle();
+  } catch (e) { toast(e.message, true); }
+  finally { $("btn-animer").disabled = false; rendreGenerer(); }
+}
+// bascule « Image à animer / Vidéos » (passe toute seule sur les vidéos à la fin du lot)
+function majBasculeAni() {
+  const t = A.etat && A.etat.travaux.find((x) => x.id === A.aniTravail);
+  const prevu = !t && A.lotPrevu["a-recents"] && A.lotPrevu["a-recents"].id === A.aniTravail ? A.lotPrevu["a-recents"] : null;
+  const enCours = !!prevu || !!(t && (t.etat === "encours" || t.etat === "attente"));
+  const n = A.derniersAni.length, total = prevu ? prevu.total : enCours ? (t.total || n) : n;
+  if (t && !enCours && n && A.aniFiniVu !== t.id) { A.aniFiniVu = t.id; A.vueAni = "resultats"; requestAnimationFrame(ajusterLots); }
+  const visible = !!(n || enCours);
+  if (!visible) A.vueAni = "image";
+  $("a-bascule").classList.toggle("cache", !visible);
+  $("a-bascule-res").textContent = enCours ? `Vidéos (${n} / ${total})` : `Vidéos (${n})`;
+  for (const b of $("a-bascule").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.res === A.vueAni);
+  $("a-res").dataset.affichage = A.vueAni;
+  $("a-recents-vide").classList.toggle("cache", !(A.vueAni === "resultats" && !n && !enCours));
+}
+
 // ------------------------------------------------------------ téléphone : barre de saisie, « Plus de réglages », lot ajusté
 const TEL = matchMedia("(max-width:959.98px)");
 // Sur téléphone, le prompt passe dans la barre du bas ; sur ordinateur il reste dans le panneau de gauche.
 function placerPrompts() {
-  for (const c of ["f", "r"]) {
+  for (const c of ["f", "r", "a"]) {
     const champ = $(c + "-prompt").closest(".champ.prompt");
     const cible = $(c + "-prompt-tel");      // téléphone et ordinateur : sous les images, avec le bouton
     if (cible) { if (champ.parentNode !== cible) cible.append(champ); }
@@ -2909,7 +3170,7 @@ function placerPrompts() {
 function ouvrirPlus(c, cible) {
   if (!TEL.matches) { if (cible && $(cible)) $(cible).scrollIntoView({block: "center"}); return; }
   const r = $(c + "-reglages");
-  $("vue-" + (c === "f" ? "creer" : "retoucher")).classList.add("plus-ouvert");
+  $("vue-" + {f: "creer", r: "retoucher", a: "animer"}[c]).classList.add("plus-ouvert");
   $("voile-fond").classList.remove("cache");
   r.scrollTop = 0;
   const x = cible && $(cible);
@@ -2918,14 +3179,14 @@ function ouvrirPlus(c, cible) {
 }
 function fermerPlus() {
   let ouvert = false;
-  for (const v of ["vue-creer", "vue-retoucher"]) if ($(v).classList.contains("plus-ouvert")) { $(v).classList.remove("plus-ouvert"); ouvert = true; }
+  for (const v of ["vue-creer", "vue-retoucher", "vue-animer"]) if ($(v).classList.contains("plus-ouvert")) { $(v).classList.remove("plus-ouvert"); ouvert = true; }
   if (ouvert && !document.querySelector(".feuille:not(.cache)")) $("voile-fond").classList.add("cache");
 }
 function court(t, n = 18) { t = (t || "").split(" · ")[0].trim(); return t.length > n ? t.slice(0, n - 1) + "…" : t; }
 function puce(texte, action, aria) { return el("button", {class: "puce-rapide", type: "button", texte, "aria-label": aria || texte, onclick: action}); }
 const SIG_RAPIDES = {};
 function majRapides() {
-  const listes = {f: [], r: []};
+  const listes = {f: [], r: [], a: []};
   const wfF = !$("f-wf").classList.contains("cache"), wfR = !$("r-wf").classList.contains("cache");
   // Créer
   const selF = wfF ? $("f-workflow") : $("f-modele"), optF = selF.selectedOptions[0];
@@ -2951,7 +3212,18 @@ function majRapides() {
   if (!wfR) { const n = RT.loras.filter((x) => x.actif !== false).length; listes.r.push(["l", n ? `LoRA ${n}` : "LoRA", () => ouvrirPlus("r", "r-ajout-lora"), "LoRA"]); }
   listes.r.push(["d", "Décrire", () => $("r-decrire").click(), "Décrire l'image"]);
   listes.r.push(["p", "Réglages", () => ouvrirPlus("r"), "Plus de réglages"]);
-  for (const c of ["f", "r"]) {
+  // Animer
+  const V = videosInv(), mA = V.modeles.find((x) => x.id === AN.modele);
+  listes.a = [];
+  listes.a.push(["m", court(mA ? mA.nom : "Modèle"), () => ouvrirPlus("a", "a-modele"), "Modèle vidéo"]);
+  listes.a.push(["du", AN.duree + " s", () => { const o = [3, 5, 8]; AN.duree = o[(o.indexOf(Number(AN.duree)) + 1) % 3]; sauverAN(); rendreAnimer(); majRapides(); }, "Durée : " + AN.duree + " s"]);
+  listes.a.push(["q", AN.qualite, () => { AN.qualite = AN.qualite === "480p" ? "720p" : "480p"; sauverAN(); rendreAnimer(); majRapides(); }, "Qualité : " + AN.qualite]);
+  if (V.rapide) listes.a.push(["ra", AN.rapide ? "Rapide" : "Complet", () => { AN.rapide = !AN.rapide; sauverAN(); rendreAnimer(); majRapides(); }, AN.rapide ? "Mode rapide activé" : "Mode rapide désactivé"]);
+  listes.a.push(["n", "× " + AN.nombre, () => ouvrirPlus("a", "a-nombre"), "Nombre de vidéos : " + AN.nombre]);
+  { const n = AN.loras.filter((x) => x.actif !== false).length; listes.a.push(["l", n ? `LoRA ${n}` : "LoRA", () => ouvrirPlus("a", "a-ajout-lora"), "LoRA vidéo"]); }
+  listes.a.push(["d", "Décrire", () => $("a-decrire").click(), "Décrire l'image"]);
+  listes.a.push(["p", "Réglages", () => ouvrirPlus("a"), "Plus de réglages"]);
+  for (const c of ["f", "r", "a"]) {
     const sig = listes[c].map((x) => x[0] + ":" + x[1]).join("|");
     if (SIG_RAPIDES[c] === sig) continue;
     SIG_RAPIDES[c] = sig;
@@ -2986,11 +3258,12 @@ function ratioLot(box, c) {
   const img = [...box.querySelectorAll("img")].find((i) => i.naturalWidth);
   if (img) return img.naturalWidth / img.naturalHeight;
   if (c === "r" && $("r-img").naturalWidth) return $("r-img").naturalWidth / $("r-img").naturalHeight;
+  if (c === "a" && $("a-img").naturalWidth) return $("a-img").naturalWidth / $("a-img").naturalHeight;
   return c === "f" && F.largeur && F.hauteur ? F.largeur / F.hauteur : 1;
 }
 function majPointTaille() { const d = Math.round(6 + 20 * (RT.taille - 6) / 134); $("r-taille-pt").style.width = $("r-taille-pt").style.height = d + "px"; }
 function ajusterLots() {
-  for (const [c, boite, bloc] of [["f", "f-recents", "f-recents-bloc"], ["r", "r-recents", "r-recents-bloc"]]) {
+  for (const [c, boite, bloc] of [["f", "f-recents", "f-recents-bloc"], ["r", "r-recents", "r-recents-bloc"], ["a", "a-recents", "a-recents-bloc"]]) {
     const box = $(boite), b = $(bloc);
     const n = box.children.length;
     if (!n || b.classList.contains("cache")) continue;
@@ -3036,7 +3309,7 @@ const observateurLots = typeof ResizeObserver === "function" ? new ResizeObserve
 // ✕ vide le prompt ; juste après, le bouton devient ↶ pour le rétablir (en cas de toucher par erreur)
 const PROMPT_EFFACE = {};
 function majVider(c) {
-  const t = $(c + "-prompt"), b = $(c === "f" ? "f-vider" : "r-vider-prompt");
+  const t = $(c + "-prompt"), b = $({f: "f-vider", r: "r-vider-prompt", a: "a-vider-prompt"}[c]);
   const retablir = !t.value && PROMPT_EFFACE[c];
   b.classList.toggle("cache", !t.value && !retablir);
   b.classList.toggle("retablir", !!retablir);
@@ -3058,12 +3331,36 @@ function brancher() {
   placerPrompts();
   TEL.addEventListener ? TEL.addEventListener("change", () => { placerPrompts(); ajusterLots(); }) : TEL.addListener(placerPrompts);
   for (const b of document.querySelectorAll("[data-fermer-plus]")) b.onclick = fermerPlus;
-  $("f-vider").onclick = () => viderPrompt("f"); $("r-vider-prompt").onclick = () => viderPrompt("r");
-  for (const c of ["f", "r"]) $(c + "-prompt").addEventListener("input", (e) => { if (e.isTrusted && $(c + "-prompt").value) delete PROMPT_EFFACE[c]; majVider(c); });
-  for (const c of ["f", "r"]) for (const ev of ["focus", "blur"]) $(c + "-prompt").addEventListener(ev, () => { ajusterHauteur($(c + "-prompt")); setTimeout(ajusterLots, 200); });
+  $("f-vider").onclick = () => viderPrompt("f"); $("r-vider-prompt").onclick = () => viderPrompt("r"); $("a-vider-prompt").onclick = () => viderPrompt("a");
+  for (const c of ["f", "r", "a"]) $(c + "-prompt").addEventListener("input", (e) => { if (e.isTrusted && $(c + "-prompt").value) delete PROMPT_EFFACE[c]; majVider(c); });
+  for (const c of ["f", "r", "a"]) for (const ev of ["focus", "blur"]) $(c + "-prompt").addEventListener(ev, () => { ajusterHauteur($(c + "-prompt")); setTimeout(ajusterLots, 200); });
   for (const b of $("r-bascule").querySelectorAll("button")) b.onclick = () => choisirAffichageRes(b.dataset.res);
-  for (const v of ["vue-creer", "vue-retoucher"]) for (const ev of ["input", "change", "click"]) $(v).addEventListener(ev, () => setTimeout(() => { try { majRapides(); } catch (e) {} }, 0));
-  if (observateurLots) for (const b of ["f-recents-bloc", "r-recents-bloc", "f-res", "r-res"]) observateurLots.observe($(b));
+  for (const v of ["vue-creer", "vue-retoucher", "vue-animer"]) for (const ev of ["input", "change", "click"]) $(v).addEventListener(ev, () => setTimeout(() => { try { majRapides(); } catch (e) {} }, 0));
+  if (observateurLots) for (const b of ["f-recents-bloc", "r-recents-bloc", "a-recents-bloc", "f-res", "r-res", "a-res"]) observateurLots.observe($(b));
+  // Animer
+  $("a-importer").onclick = () => definirSourceAnim("fichier");
+  $("a-galerie").onclick = () => definirSourceAnim("galerie");
+  $("a-changer").onclick = () => { AN.source = null; rendreAnimer(); };
+  $("a-installer-btn").onclick = () => installerWan($("a-installer-liste").checked);
+  $("a-modele").onchange = (e) => { AN.modele = e.target.value; sauverAN(); rendreAnimer(); };
+  $("a-prompt").oninput = (e) => { AN.prompt = e.target.value; ajusterHauteur(e.target); sauverAN(); };
+  $("a-negatif").oninput = (e) => { AN.negatif = e.target.value; sauverAN(); };
+  for (const b of $("a-duree").querySelectorAll("button")) b.onclick = () => { AN.duree = Number(b.dataset.duree); sauverAN(); rendreAnimer(); };
+  for (const b of $("a-qualite").querySelectorAll("button")) b.onclick = () => { AN.qualite = b.dataset.qualite; sauverAN(); rendreAnimer(); };
+  $("a-rapide").onchange = (e) => { AN.rapide = e.target.checked; sauverAN(); rendreAnimer(); };
+  $("a-moins").onclick = () => { AN.nombre = Math.max(1, AN.nombre - 1); sauverAN(); rendreAnimer(); rendreGenerer(); };
+  $("a-plus").onclick = () => { AN.nombre = Math.min(4, AN.nombre + 1); sauverAN(); rendreAnimer(); rendreGenerer(); };
+  $("a-ajout-lora").onchange = (e) => { if (e.target.value) { AN.loras.push({id: e.target.value, poids: 1, actif: true}); sauverAN(); } rendreLorasAni(); };
+  $("a-steps").onchange = (e) => { AN.steps = Math.max(2, Math.min(80, parseInt(e.target.value, 10) || 20)); sauverAN(); rendreAnimer(); };
+  $("a-cfg").onchange = (e) => { AN.cfg = Math.max(1, Math.min(10, parseFloat(e.target.value) || 3.5)); sauverAN(); rendreAnimer(); };
+  $("a-graine-fixe").onchange = (e) => { AN.grainefixe = e.target.checked; if (AN.grainefixe && !Number.isFinite(AN.graine)) AN.graine = nouvelleGraine(); sauverAN(); rendreAnimer(); };
+  $("a-graine").onchange = (e) => { AN.graine = parseInt(e.target.value, 10); sauverAN(); };
+  $("a-decrire").onclick = () => ouvrirDescription("a-prompt", AN.source ? {id: AN.source.id, url: AN.source.url} : null);
+  $("btn-animer").onclick = animer;
+  $("btn-stop-a").onclick = () => $("btn-stop").click();
+  for (const b of $("a-bascule").querySelectorAll("button")) b.onclick = () => { A.vueAni = b.dataset.res; majBasculeAni(); ajusterLots(); };
+  $("a-img").addEventListener("load", ajusterLots);
+  $("v-animer").onclick = () => { const im = A.images[vIndex]; if (!im) return; fermerVisionneuse(); definirSourceAnim("galerie", im.id); };
   $("r-img").addEventListener("load", ajusterLots);
   for (const b of document.querySelectorAll("[data-fermer]")) b.onclick = fermerFeuilles;
   for (const b of document.querySelectorAll("[data-ouvrir]")) b.onclick = () => {
@@ -3091,7 +3388,7 @@ function brancher() {
   $("btn-effacer").onclick = async () => {
     if (!A.canal) return;
     if (!(await confirmer("Effacer la zone privée ?", "Toutes les images de la session sont effacées définitivement, ainsi que la mémoire de ComfyUI (qui redémarre). Les modèles restent installés.", "Effacer"))) return;
-    try { const r = await A.canal.appel("effacer", {}, 60000); A.derniersIds = []; A.derniersRet = []; RT.source = null; RT.references = []; rendreRetouche(); rendreRecents(); for (const u of A.vignettes.values()) URL.revokeObjectURL(u); A.vignettes.clear(); A.pleines.clear(); toast(r.message || "Zone effacée."); }
+    try { const r = await A.canal.appel("effacer", {}, 60000); A.derniersIds = []; A.derniersRet = []; A.derniersAni = []; RT.source = null; RT.references = []; AN.source = null; rendreRetouche(); rendreAnimer(); rendreRecents(); for (const u of A.vignettes.values()) URL.revokeObjectURL(u); A.vignettes.clear(); A.pleines.clear(); toast(r.message || "Zone effacée."); }
     catch (e) { toast(e.message, true); }
   };
   $("btn-audit").onclick = async () => {
@@ -3134,7 +3431,7 @@ function brancher() {
   $("manuel-terminer-ok").onclick = () => { S.prefs.aTerminer = null; sauver(); rafraichirAccueil(); };
   $("btn-oublier").onclick = async () => {
     if (!(await confirmer("Tout oublier ?", "Tes clés (y compris la clé Studio), ta liste de modèles, tes workflows et tes derniers réglages sont effacés de cet appareil. Une nouvelle clé Studio sera créée : il faudra la recopier dans ton modèle Runpod, ou recevoir l'ancienne en autorisant cet appareil depuis un autre." + (sessionActive() ? " La session en cours continue sur Runpod : termine-la d'abord." : ""), "Oublier"))) return;
-    S.cles = {}; S.liste = []; S.form = null; S.retouche = null; S.workflows = []; RT.workflow = null; S.prefs = {liste: true}; S.cleStudio = b64e(aleatoire(32));
+    S.cles = {}; S.liste = []; S.form = null; S.retouche = null; S.anime = null; S.workflows = []; RT.workflow = null; S.prefs = {liste: true}; S.cleStudio = b64e(aleatoire(32));
     F = formulaireParDefaut(); sauver(); rendreReglages(); rendreListe(); rafraichirAccueil(); toast("Effacé de cet appareil.");
   };
   // workflows
@@ -3309,6 +3606,7 @@ function ajusterHauteur(t) {
 brancher();
 rendreFormulaire();
 rendreRetouche();
+rendreAnimer();
 rendreListe();
 rendre();
 migrerCles().then(reprendreAuLancement);
