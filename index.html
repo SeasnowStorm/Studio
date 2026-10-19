@@ -729,11 +729,11 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
    <div class="reglages" id="r-reglages">
     <div class="titre-plus"><h2>Plus de réglages</h2><button class="croix" type="button" data-fermer-plus aria-label="Fermer">✕</button></div>
     <div class="panneau gauche">
-    <div id="r-qwen" class="bloc cache">
-      <p><b>Qwen Image 2.1, le modèle de retouche conseillé</b></p>
-      <p class="tres-discret">Modèle officiel (int8), encodeur de texte, VAE et LoRA Turbo depuis le dépôt Comfy-Org sur Hugging Face : environ 18 Go sur le disque du Pod, chaque fichier vérifié par son empreinte. Licence Qwen Research.</p>
-      <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="r-qwen-liste" checked><span></span></label></div>
-      <button class="bouton principal plein" type="button" id="r-qwen-installer">Installer Qwen Image 2.1</button>
+    <div id="r-reco" class="bloc cache">
+      <p><b>Retouche conseillée : fineporn v5 + AnyPaint + Identity Edit</b></p>
+      <p class="tres-discret" id="r-reco-texte"></p>
+      <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="r-reco-liste" checked><span></span></label></div>
+      <button class="bouton principal plein" type="button" id="r-reco-btn">Installer</button>
     </div>
     <label class="champ"><span>Workflow</span><select id="r-workflow"></select></label>
     <div id="r-std-haut">
@@ -859,17 +859,13 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <div class="titre-plus"><h2>Plus de réglages</h2><button class="croix" type="button" data-fermer-plus aria-label="Fermer">✕</button></div>
     <div class="panneau gauche">
     <div id="a-installer" class="bloc cache">
-      <p><b>Modèle conseillé : DaSiWa Wan 2.2 · SnatchKiss v11</b></p>
-      <p class="tres-discret">Fine-tune de Wan 2.2 pour adultes, accélération intégrée (4 étapes). Environ 35 Go : ses deux moitiés depuis Civitai (clé nécessaire), encodeur et VAE officiels depuis Hugging Face.</p>
+      <p><b>Modèle conseillé : 10Eros Max beta 5 (MiniMax H3)</b></p>
+      <p class="tres-discret">Vidéo avec son, pensée pour le contenu adulte, accélération intégrée (8 étapes). Depuis Hugging Face, version figée et empreintes vérifiées : le modèle (21 Go), plus l'encodeur de texte et les deux VAE de MiniMax H3 s'ils manquent (19 Go).</p>
       <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="a-installer-liste" checked><span></span></label></div>
-      <button class="bouton principal plein" type="button" id="a-installer-btn">Installer DaSiWa</button>
-      <button class="lien" type="button" id="a-officiel-btn">Ou Wan 2.2 officiel (Apache 2.0, ≈ 38 Go)</button>
+      <button class="bouton principal plein" type="button" id="a-installer-btn">Installer 10Eros Max</button>
     </div>
     <label class="champ"><span>Modèle vidéo</span><select id="a-modele"></select></label>
     <p class="tres-discret" id="a-modele-aide"></p>
-    <div id="a-h3" class="cache"><button class="lien" type="button" id="a-h3-btn">Installer aussi MiniMax H3 (vidéo avec son, ≈ 42 Go)</button></div>
-    <div id="a-eros" class="cache"><button class="lien" type="button" id="a-eros-btn">Installer aussi 10Eros Max beta 5 (MiniMax H3 adulte, ≈ 21 Go)</button></div>
-    <div id="a-h3ref" class="cache"><button class="lien" type="button" id="a-h3ref-btn">Installer aussi MiniMax H3 d'après des références</button></div>
     <span class="maison-prompt" id="a-prompt-maison" hidden></span>
     <div class="champ prompt">
       <div class="ligne-champ"><label for="a-prompt">Mouvement</label><button class="lien" type="button" id="a-decrire">Décrire l'image</button></div>
@@ -1137,7 +1133,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-238761030520.tgz", sha: "2387610305205de7ca66e24fc6c6a84a9a05ac8e3fcabac294623818f9701cae"};
+const PAQUET = {fichier: "pod-90204680a6bf.tgz", sha: "90204680a6bf1c030f1149d22b8bad21c2a0ec16499b0960cb20add8da343120"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
@@ -1603,9 +1599,7 @@ function rendre() {
   majPastille();
   rendreTravaux();
   rendreOfficiels();
-  if (A.vue === "animer") { const inst = !!installDasiwaEnCours(), instO = !!installWanEnCours();
-    if ($("a-installer-btn").disabled !== inst || $("a-officiel-btn").disabled !== instO || $("a-h3-btn").disabled !== !!installH3EnCours()
-      || $("a-h3ref-btn").disabled !== !!installH3RefEnCours() || $("a-eros-btn").disabled !== !!installErosEnCours()) rendreAnimer(); }
+  if (A.vue === "animer" && $("a-installer-btn").disabled !== !!installErosEnCours()) rendreAnimer();
   rendreRecoCreer();
   rendreGenerer();
   if (!$("feuille-session").classList.contains("cache")) rendreSession();
@@ -2526,17 +2520,44 @@ function maxReferences(m) {
   return 0;
 }
 function maxReferencesRT() { const w = wfCourant("r"); return w ? Math.max(0, w.nb_images - 1) : maxReferences(modeleRT()); }
-function installQwenEnCours() { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && (!t.quoi || t.quoi === "qwen21") && (t.etat === "attente" || t.etat === "encours")); }
+// Retouche conseillée : fineporn v5 (Krea 2) avec ses adaptateurs AnyPaint (zone peinte) et Identity Edit (ressemblance)
+const RECO_RT = () => [{k: "fineporn", el: FINEPORN, nom: "fineporn v5", detail: "fineporn v5 depuis Civitai (clé nécessaire, variante choisie selon la carte)"},
+  {k: "anypaint", el: {lien: "studio:anypaint", nom: "Krea 2 AnyPaint"}, nom: "AnyPaint", detail: "Krea 2 AnyPaint (0,23 Go)"},
+  {k: "identite", el: {lien: "studio:identite", nom: "Krea 2 Identity Edit"}, nom: "Identity Edit", detail: "Krea 2 Identity Edit (1,8 Go)"}];
+function recoRTManquants() {
+  return RECO_RT().filter((x) => x.k === "fineporn" ? !finepornInstalle() : !adaptInstalle(x.k));
+}
+function recoRTEnCours() { return !!(installFinepornEnCours() || adaptEnCours("anypaint") || adaptEnCours("identite")); }
+function rendreRecoRetouche() {
+  const manq = recoRTManquants(), enCours = recoRTEnCours();
+  $("r-reco").classList.toggle("cache", !A.modeles || !manq.length || wfCourant("r"));
+  if (!manq.length) return;
+  $("r-reco-texte").textContent = "À installer : " + manq.map((x) => x.detail).join(", ") +
+    ". Composants officiels de Krea 2 ajoutés s'ils manquent ; chaque fichier est vérifié par son empreinte." +
+    (manq.length < 3 && manq.every((x) => x.k !== "fineporn") ? " (fineporn v5 est déjà installé.)" : "");
+  $("r-reco-btn").disabled = enCours;
+  $("r-reco-btn").textContent = enCours ? "Installation en cours… (voir Modèles)" : "Installer " + manq.map((x) => x.nom).join(" + ");
+}
+async function installerRecoRetouche() {
+  const manq = recoRTManquants(); if (!manq.length) return;
+  if (manq.some((x) => x.k === "fineporn") && !S.cles.civitai) { toast("Ajoute d'abord ta clé Civitai dans Réglages.", true); ouvrirFeuille("reglages"); return; }
+  if (!(await confirmer("Installer la retouche conseillée ?", manq.map((x) => x.detail).join(" ; ") +
+    ". Téléchargé sur le disque du Pod, chaque fichier vérifié par son empreinte ; les composants officiels de Krea 2 sont ajoutés s'ils manquent.", "Installer", false))) return;
+  if ($("r-reco-liste").checked) { let ch = false; for (const x of manq) ch = ajouterListe(x.el) || ch; if (ch) { sauver(); rendreListe(); } }
+  try { await A.canal.appel("installer_liste", {elements: manq.map((x) => x.el), jetons: jetons()}); toast("Installation lancée."); boucle(); }
+  catch (e) { toast(e.message, true); }
+}
 
 function rendreRetoucheOptions() {
   const sel = $("r-modele"); sel.textContent = "";
   const liste = modelesRetouche();
   if (!liste.length) sel.append(el("option", {value: "", texte: "Aucun modèle : ajoute-en un dans Modèles"}));
-  const ordre = (m) => m.famille === "qwen21" ? 0 : m.famille === "flux2" ? 1 : m.famille === "krea2" ? 2 : 3;
+  const fine = (m) => (m.source || "").includes("2762538") || /fineporn/i.test(`${m.nom} ${m.origine || ""} ${m.fichier}`);
+  const ordre = (m) => fine(m) ? 0 : m.famille === "krea2" ? 1 : m.famille === "qwen21" ? 2 : m.famille === "flux2" ? 3 : 4;
   for (const m of liste.slice().sort((a, b) => ordre(a) - ordre(b)))
-    sel.append(el("option", {value: m.rel, texte: m.nom + " · " + m.defauts.variante + (m.famille === "qwen21" ? " (conseillé)" : "")}));
+    sel.append(el("option", {value: m.rel, texte: m.nom + " · " + m.defauts.variante + (fine(m) ? " (conseillé)" : "")}));
   if (!liste.find((m) => m.rel === RT.modele)) {
-    const pref = liste.find((m) => m.famille === "qwen21" && !m.defauts.turbo_integre) || liste.find((m) => m.famille === "qwen21")
+    const pref = liste.find(fine) || liste.find((m) => m.famille === "qwen21" && !m.defauts.turbo_integre) || liste.find((m) => m.famille === "qwen21")
       || liste.find((m) => m.famille === "flux2") || liste.find((m) => m.rel === F.modele) || liste[0];
     choisirModeleRT(pref ? pref.rel : null);
   }
@@ -2563,11 +2584,7 @@ function rendreRetouche() {
   $("r-tout").checked = !!RT.tout;
   for (const b of $("r-outil").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.outil === RT.outil);
   $("r-taille").value = RT.taille; $("r-taille-val").textContent = RT.taille + " px"; majPointTaille();
-  // Qwen Image 2.1 pas encore installé : proposition d'installation en un geste
-  const inst = installQwenEnCours();
-  $("r-qwen").classList.toggle("cache", !A.modeles || !!A.modeles.qwen21);
-  $("r-qwen-installer").disabled = !!inst;
-  $("r-qwen-installer").textContent = inst ? "Installation en cours… " + (inst.progres ? `${inst.progres.fait}${inst.progres.total ? " / " + inst.progres.total : ""} Go` : "") : "Installer Qwen Image 2.1";
+  rendreRecoRetouche();
   // Krea 2 : méthode classique, AnyPaint ou Identity Edit
   const krea = !!(m && m.famille === "krea2") && !wfCourant("r"), choix = RT.modeKrea || "classique";
   $("r-krea-bloc").classList.toggle("cache", !krea);
@@ -2814,11 +2831,6 @@ async function installerAdaptateur(k, liste) {
   try { await A.canal.appel("installer_adaptateur", {quoi: k, liste, jetons: jetons()}); toast(`Installation de ${a.nom} lancée.`); boucle(); }
   catch (e) { toast(e.message, true); }
 }
-async function installerQwen(liste) {
-  if (!(await confirmer("Installer Qwen Image 2.1 ?", "Environ 18 Go téléchargés depuis Hugging Face sur le disque du Pod : fichiers officiels Comfy-Org, chacun vérifié par son empreinte. Compte une dizaine de minutes.", "Installer", false))) return;
-  try { await A.canal.appel("installer_officiel", {liste, jetons: jetons()}); toast("Installation de Qwen Image 2.1 lancée."); boucle(); }
-  catch (e) { toast(e.message, true); }
-}
 
 // ------------------------------------------------------------ « Mes workflows » (ComfyUI, format API)
 // Un workflow exporté depuis ComfyUI (« Export (API) ») est gardé sur CET appareil (il peut contenir un prompt).
@@ -2849,7 +2861,7 @@ function basculerWorkflow(cote) {
   $(cote + "-droite-wf").classList.toggle("cache", !w);
   $(cote + "-wf").classList.toggle("cache", !w);
   if (cote === "r" && w) {
-    $("r-qwen").classList.add("cache");
+    $("r-reco").classList.add("cache");
     $("r-prompt-label").textContent = "Prompt";
     $("r-prompt").placeholder = "Le texte envoyé au prompt de ton workflow…";
     $("r-prompt-aide").textContent = "Variantes : écris {rouge|bleu} et chaque image en tire une au hasard.";
@@ -3085,20 +3097,6 @@ let sauverANMinuteur = null;
 function sauverAN() { clearTimeout(sauverANMinuteur); sauverANMinuteur = setTimeout(() => {
   const {source, references, ...reste} = AN; S.anime = reste; sauver(); }, 400); }
 function videosInv() { return (A.modeles && A.modeles.videos) || {modeles: [], loras: [], rapide: false, composants: false, officiel: false}; }
-// Modèle conseillé d'Animer : DaSiWa (Civitai), ses deux moitiés publiées comme deux versions
-const DASIWA = [{lien: "https://civitai.red/models/1981116?modelVersionId=2953474", nom: "DaSiWa SnatchKiss v11 (haut bruit)"},
-                {lien: "https://civitai.red/models/1981116?modelVersionId=2953485", nom: "DaSiWa SnatchKiss v11 (bas bruit)"}];
-function dasiwaInstalle() { return videosInv().modeles.some((m) => m.conseille); }
-function installDasiwaEnCours() {
-  return A.etat && A.etat.travaux.find((t) => t.type === "telechargement" && DASIWA.some((x) => x.nom === t.titre) && (t.etat === "attente" || t.etat === "encours"));
-}
-async function installerDasiwa() {
-  if (!S.cles.civitai) { toast("Ajoute d'abord ta clé Civitai dans Réglages.", true); ouvrirFeuille("reglages"); return; }
-  if (!(await confirmer("Installer DaSiWa ?", "Ses deux moitiés (environ 2 × 13 à 18 Go selon la variante choisie pour la carte du Pod) sont téléchargées depuis Civitai et vérifiées par leur empreinte, puis l'encodeur UMT5 et le VAE officiels de Wan 2.2 depuis Hugging Face s'ils manquent. Licence du créateur : pas de redistribution du modèle.", "Installer", false))) return;
-  if ($("a-installer-liste").checked) { let ch = false; for (const x of DASIWA) ch = ajouterListe(x) || ch; if (ch) { sauver(); rendreListe(); } }
-  try { await A.canal.appel("installer_liste", {elements: DASIWA, jetons: jetons()}); toast("Installation de DaSiWa lancée."); boucle(); }
-  catch (e) { toast(e.message, true); }
-}
 function installErosEnCours() {
   return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "eros" && (t.etat === "attente" || t.etat === "encours"));
 }
@@ -3110,18 +3108,8 @@ async function installerEros() {
             : "Plus, depuis Comfy-Org/MiniMax-H3 : l'encodeur qwen3vl_32b_minimax_h3_nvfp4_awq (15,7 Go), les VAE minimax_h3_video_vae_int8_convrot (2,8 Go) et minimax_h3_audio_vae_fp32 (0,6 Go). ") +
     "Fusion communautaire en beta (accélération intégrée). Licence MiniMax H3 Community (hors UE, Royaume-Uni, Corée du Sud, États-Unis, Pod compris), plus celles de Wan 2.2, LTX 2.3 et Krea 2 pour les parties reprises : sous ta responsabilité.",
     "Installer", false))) return;
+  if ($("a-installer-liste").checked && ajouterListe({lien: "studio:eros", nom: "10Eros Max beta 5 (MiniMax H3)"})) { sauver(); rendreListe(); }
   try { await A.canal.appel("installer_officiel", {quoi: "eros", jetons: jetons()}); toast("Installation de 10Eros Max lancée."); boucle(); }
-  catch (e) { toast(e.message, true); }
-}
-function installH3RefEnCours() {
-  return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "h3ref" && (t.etat === "attente" || t.etat === "encours"));
-}
-async function installerH3Ref() {
-  const V = videosInv();
-  if (!(await confirmer("Installer MiniMax H3 d'après des références ?",
-    `Le modèle « ref2va » (21 Go) et son LoRA Turbo (2 Go) depuis Hugging Face (Comfy-Org, version figée, empreintes vérifiées)${V.h3 ? " ; l'encodeur et les VAE déjà installés pour MiniMax H3 resservent" : ", plus l'encodeur de texte et les deux VAE (≈ 19 Go)"}. ` +
-    "Même licence MiniMax H3 Community : territoire excluant l'Union européenne, le Royaume-Uni, la Corée du Sud et les États-Unis (Pod compris), sous ta responsabilité.", "Installer", false))) return;
-  try { await A.canal.appel("installer_officiel", {quoi: "h3ref", jetons: jetons()}); toast("Installation lancée."); boucle(); }
   catch (e) { toast(e.message, true); }
 }
 async function ajouterRefAnim(origine) {
@@ -3144,58 +3132,30 @@ function rendreRefsAnim(max) {
     el("button", {class: "ref-ajout", type: "button", texte: "+ Galerie", "aria-label": "Référence depuis la galerie", onclick: () => ajouterRefAnim("galerie")}));
   $("a-refs-compte").textContent = `${AN.references.length} / ${max}`;
 }
-function installH3EnCours() {
-  return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "h3" && (t.etat === "attente" || t.etat === "encours"));
-}
-async function installerH3() {
-  if (!(await confirmer("Installer MiniMax H3 ?",
-    "Environ 42 Go téléchargés depuis Hugging Face (dépôt Comfy-Org, version figée, chaque fichier vérifié par son empreinte) : modèle int8, encodeur de texte Qwen3-VL 32B, VAE vidéo et audio, LoRA Turbo. " +
-    "Licence MiniMax H3 Community : son territoire exclut l'Union européenne, le Royaume-Uni, la Corée du Sud et les États-Unis, pour l'utilisation comme pour l'hébergement et les vidéos produites. " +
-    "Cela vise aussi l'emplacement du Pod (centre de données Runpod) : c'est sous ta responsabilité.", "Installer", false))) return;
-  try { await A.canal.appel("installer_officiel", {quoi: "h3", jetons: jetons()}); toast("Installation de MiniMax H3 lancée."); boucle(); }
-  catch (e) { toast(e.message, true); }
-}
-function installWanEnCours() {
-  return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "wan22" && (t.etat === "attente" || t.etat === "encours"));
-}
+function dureesAni(m) { return m && m.h3 ? [5, 8, 12] : [3, 5, 8]; }
 function rendreAnimer() {
-  const V = videosInv(), inst = installDasiwaEnCours(), instO = installWanEnCours();
-  $("a-installer").classList.toggle("cache", dasiwaInstalle() || !A.modeles);
+  const V = videosInv(), inst = installErosEnCours();
+  $("a-installer").classList.toggle("cache", !!V.eros || !A.modeles);
   $("a-installer-btn").disabled = !!inst;
-  $("a-installer-btn").textContent = inst ? "Installation en cours… (voir Modèles)" : "Installer DaSiWa";
-  $("a-officiel-btn").classList.toggle("cache", V.officiel);
-  $("a-officiel-btn").disabled = !!instO;
-  $("a-officiel-btn").textContent = instO ? "Wan 2.2 officiel : installation en cours…" : "Ou Wan 2.2 officiel (Apache 2.0, ≈ 38 Go)";
+  $("a-installer-btn").textContent = inst ? "Installation en cours… (voir Modèles)" : "Installer 10Eros Max";
   const sel = $("a-modele"); sel.textContent = "";
-  if (!V.modeles.length) sel.append(el("option", {value: "", texte: "Aucun modèle vidéo : installe DaSiWa"}));
+  if (!V.modeles.length) sel.append(el("option", {value: "", texte: "Aucun modèle vidéo : installe 10Eros Max"}));
   for (const m of V.modeles) sel.append(el("option", {value: m.id, texte: m.nom}));
   if (!V.modeles.some((m) => m.id === AN.modele)) AN.modele = V.modeles.length ? (V.modeles.find((m) => m.eros && !m.ref) || V.modeles.find((m) => m.conseille) || V.modeles.find((m) => m.officiel) || V.modeles[0]).id : null;
   sel.value = AN.modele || "";
   const m = V.modeles.find((x) => x.id === AN.modele);
   const h3 = !!(m && m.h3), refMode = !!(m && m.ref), integre = !!(m && m.vitesse_integree), rapideOk = h3 ? !!m.rapide : V.rapide && !integre;
-  const instH = installH3EnCours();
-  $("a-h3").classList.toggle("cache", !!V.h3 || !A.modeles);
-  const instE = installErosEnCours();
-  $("a-eros").classList.toggle("cache", !!V.eros || !A.modeles);
-  $("a-eros-btn").disabled = !!instE;
-  $("a-eros-btn").textContent = instE ? "10Eros Max : installation en cours… (voir Modèles)" : "Installer aussi 10Eros Max beta 5 (MiniMax H3 adulte, ≈ 21 Go)";
-  const instR = installH3RefEnCours();
-  $("a-h3ref").classList.toggle("cache", !!V.h3ref || !A.modeles);
-  $("a-h3ref-btn").disabled = !!instR;
-  $("a-h3ref-btn").textContent = instR ? "MiniMax H3 références : installation en cours…" : V.h3 ? "Installer aussi MiniMax H3 d'après des références (≈ 23 Go)" : "Installer aussi MiniMax H3 d'après des références (≈ 42 Go)";
   $("a-refs-zone").classList.toggle("cache", !refMode);
   $("a-bascule-img").textContent = refMode ? "Références" : "Image à animer";
   if (refMode) rendreRefsAnim(m.max_refs || 9);
   $("a-prompt").placeholder = refMode ? "Ex. : <Picture 1> walks along a beach at sunset, wearing the outfit from <Picture 2>; waves and wind sounds."
     : "Décris le mouvement : « elle se retourne lentement et sourit, la caméra s'approche »";
-  $("a-h3-btn").disabled = !!instH;
-  $("a-h3-btn").textContent = instH ? "MiniMax H3 : installation en cours… (voir Modèles)" : "Installer aussi MiniMax H3 (vidéo avec son, ≈ 42 Go)";
   const eros = !!(m && m.eros);
   $("a-negatif-champ").classList.toggle("cache", h3);
   $("a-cfg-champ").classList.toggle("cache", h3);
   $("a-rapide-aide").textContent = h3 ? `LoRA Turbo : ${refMode ? 4 : 8} étapes au lieu de 20` : "LoRA lightx2v : 4 étapes au lieu de 20, environ 5 fois plus vite";
   $("a-avance-note").textContent = h3 ? `Le mode rapide impose ${refMode ? 4 : 8} étapes.`  + " MiniMax H3 n'utilise ni CFG ni texte « À éviter »." : "Le mode rapide impose 4 étapes et un CFG de 1.";
-  $("a-note").textContent = h3 ? "Vidéo à 24 images/s avec son (voix, bruitages, musique selon ta description). Durées entraînées de 5 à 15 s ; 3 s n'est pas testé. Temps de calcul sur RTX 5090 : non vérifié (modèle lourd, probablement plusieurs minutes)."
+  $("a-note").textContent = h3 ? "Vidéo à 24 images/s avec son (voix, bruitages, musique selon ta description). Durées entraînées de 5 à 15 s. Temps de calcul : non vérifié (modèle lourd ; une carte récente de 96 Go est la plus à l'aise)."
     : "Vidéo à 16 images/s. Sur une RTX 5090, compter de l'ordre d'une à deux minutes en mode rapide 480p, nettement plus en 720p ou sans mode rapide (non vérifié).";
   $("a-modele-aide").textContent = !m ? "" : !m.pret ? "Encodeur de texte ou VAE manquant : relance l'installation de ce modèle." :
     eros ? (refMode ? "10Eros Max beta 5 · nouvelle scène d'après tes références, avec son ; accélération intégrée (6 à 8 étapes)"
@@ -3209,6 +3169,10 @@ function rendreAnimer() {
   $("a-vide").classList.toggle("cache", !!AN.source || refMode);
   $("a-source").classList.toggle("cache", !AN.source || refMode);
   if (AN.source && $("a-img").getAttribute("src") !== AN.source.url) $("a-img").src = AN.source.url;
+  // MiniMax H3 est entraîné de 5 à 15 s ; Wan 2.2 donne le meilleur jusqu'à ~5 s
+  const durees = dureesAni(m);
+  if (!durees.includes(Number(AN.duree))) { AN.duree = durees.reduce((a, d) => Math.abs(d - AN.duree) < Math.abs(a - AN.duree) ? d : a); sauverAN(); }
+  $("a-duree").querySelectorAll("button").forEach((b, i) => { b.dataset.duree = durees[i]; b.textContent = durees[i] + " s"; });
   for (const b of $("a-duree").querySelectorAll("button")) b.setAttribute("aria-pressed", Number(b.dataset.duree) === Number(AN.duree));
   for (const b of $("a-qualite").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.qualite === AN.qualite);
   $("a-rapide").checked = !!AN.rapide && rapideOk; $("a-rapide").disabled = !rapideOk;
@@ -3284,11 +3248,6 @@ async function definirSourceAnim(origine, idGalerie) {
     AN.source = src; A.vueAni = "image";
     choisirVue("animer"); rendreAnimer(); majBasculeAni();
   } catch (e) { toast("Image non chargée : " + e.message, true); }
-}
-async function installerWan(liste) {
-  if (!(await confirmer("Installer Wan 2.2 ?", "Environ 38 Go téléchargés depuis Hugging Face sur le disque du Pod : fichiers officiels Comfy-Org (licence Apache 2.0), chacun vérifié par son empreinte. Compte un quart d'heure à une demi-heure selon le Pod.", "Installer", false))) return;
-  try { await A.canal.appel("installer_officiel", {quoi: "wan22", liste, jetons: jetons()}); toast("Installation de Wan 2.2 lancée."); boucle(); }
-  catch (e) { toast(e.message, true); }
 }
 function demandeAnimer() {
   const V = videosInv();
@@ -3368,8 +3327,8 @@ function majRapides() {
   const listes = {f: [], r: [], a: []};
   // modèle conseillé pas encore installé : une pastille en tête, qui ouvre son bloc d'installation
   if (!$("f-reco").classList.contains("cache")) listes.f.push(["i", "＋ fineporn v5", () => ouvrirPlus("f", "f-reco-btn"), "Installer le modèle conseillé fineporn v5"]);
-  if (!$("r-qwen").classList.contains("cache")) listes.r.push(["i", "＋ Qwen 2.1", () => ouvrirPlus("r", "r-qwen-installer"), "Installer le modèle conseillé Qwen Image 2.1"]);
-  if (!$("a-installer").classList.contains("cache")) listes.a.push(["i", "＋ DaSiWa", () => ouvrirPlus("a", "a-installer-btn"), "Installer le modèle vidéo conseillé DaSiWa"]);
+  if (!$("r-reco").classList.contains("cache")) listes.r.push(["i", "＋ Retouche conseillée", () => ouvrirPlus("r", "r-reco-btn"), "Installer fineporn v5, AnyPaint et Identity Edit"]);
+  if (!$("a-installer").classList.contains("cache")) listes.a.push(["i", "＋ 10Eros Max", () => ouvrirPlus("a", "a-installer-btn"), "Installer le modèle vidéo conseillé 10Eros Max"]);
   const wfF = !$("f-wf").classList.contains("cache"), wfR = !$("r-wf").classList.contains("cache");
   // Créer
   const selF = wfF ? $("f-workflow") : $("f-modele"), optF = selF.selectedOptions[0];
@@ -3400,7 +3359,7 @@ function majRapides() {
 
   listes.a.push(["m", court(mA ? mA.nom : "Modèle"), () => ouvrirPlus("a", "a-modele"), "Modèle vidéo"]);
   if (mA && mA.ref) listes.a.push(["ref", AN.references.length ? `Réf. ${AN.references.length}` : "+ Réf.", () => { if (TEL.matches) fermerPlus(); A.vueAni = "image"; majBasculeAni(); if (!AN.references.length) ajouterRefAnim("fichier"); }, "Images de référence"]);
-  listes.a.push(["du", AN.duree + " s", () => { const o = [3, 5, 8]; AN.duree = o[(o.indexOf(Number(AN.duree)) + 1) % 3]; sauverAN(); rendreAnimer(); majRapides(); }, "Durée : " + AN.duree + " s"]);
+  listes.a.push(["du", AN.duree + " s", () => { const o = dureesAni(mA); AN.duree = o[(o.indexOf(Number(AN.duree)) + 1) % 3]; sauverAN(); rendreAnimer(); majRapides(); }, "Durée : " + AN.duree + " s"]);
   listes.a.push(["q", AN.qualite, () => { AN.qualite = AN.qualite === "480p" ? "720p" : "480p"; sauverAN(); rendreAnimer(); majRapides(); }, "Qualité : " + AN.qualite]);
   if (mA && mA.h3 ? mA.rapide : V.rapide && !(mA && mA.vitesse_integree)) listes.a.push(["ra", AN.rapide ? "Rapide" : "Complet", () => { AN.rapide = !AN.rapide; sauverAN(); rendreAnimer(); majRapides(); }, AN.rapide ? "Mode rapide activé" : "Mode rapide désactivé"]);
   listes.a.push(["n", "× " + AN.nombre, () => ouvrirPlus("a", "a-nombre"), "Nombre de vidéos : " + AN.nombre]);
@@ -3526,11 +3485,7 @@ function brancher() {
   $("a-importer").onclick = () => definirSourceAnim("fichier");
   $("a-galerie").onclick = () => definirSourceAnim("galerie");
   $("a-changer").onclick = () => { AN.source = null; rendreAnimer(); };
-  $("a-installer-btn").onclick = installerDasiwa;
-  $("a-h3-btn").onclick = installerH3;
-  $("a-h3ref-btn").onclick = installerH3Ref;
-  $("a-eros-btn").onclick = installerEros;
-  $("a-officiel-btn").onclick = () => installerWan($("a-installer-liste").checked);
+  $("a-installer-btn").onclick = installerEros;
   $("a-modele").onchange = (e) => { AN.modele = e.target.value; sauverAN(); rendreAnimer(); };
   $("a-prompt").oninput = (e) => { AN.prompt = e.target.value; ajusterHauteur(e.target); sauverAN(); };
   $("a-negatif").oninput = (e) => { AN.negatif = e.target.value; sauverAN(); };
@@ -3620,7 +3575,7 @@ function brancher() {
     S.cleStudio = t; sauver(); rendreReglages(); toast("Clé Studio remplacée.");
   };
   $("lien-modele").onchange = (e) => { const v = e.target.value.trim(); S.prefs.lienModele = /^https:\/\/([a-z]+\.)?runpod\.io\//.test(v) ? v : ""; if (v && !S.prefs.lienModele) toast("Lien non reconnu : il doit commencer par https://…runpod.io/", true); sauver(); rafraichirAccueil(); };
-  $("r-qwen-installer").onclick = () => installerQwen($("r-qwen-liste").checked);
+  $("r-reco-btn").onclick = installerRecoRetouche;
   $("manuel-terminer-ok").onclick = () => { S.prefs.aTerminer = null; sauver(); rafraichirAccueil(); };
   $("btn-oublier").onclick = async () => {
     if (!(await confirmer("Tout oublier ?", "Tes clés (y compris la clé Studio), ta liste de modèles, tes workflows et tes derniers réglages sont effacés de cet appareil. Une nouvelle clé Studio sera créée : il faudra la recopier dans ton modèle Runpod, ou recevoir l'ancienne en autorisant cet appareil depuis un autre." + (sessionActive() ? " La session en cours continue sur Runpod : termine-la d'abord." : ""), "Oublier"))) return;
