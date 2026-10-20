@@ -267,7 +267,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
   .feuille{left:50%;right:auto;bottom:auto;top:8vh;transform:translateX(-50%);width:min(600px,92vw);border:1px solid var(--trait);
     border-radius:var(--r-grand);max-height:84vh}
   .feuille .poignee{display:none}
-  .toast{bottom:28px}
+  .toast{bottom:auto;top:74px}   /* PC : en haut, sans masquer la zone de saisie */
   .visionneuse .scene img{max-height:calc(100vh - 220px)}
   .toile canvas{cursor:none}
 }
@@ -401,7 +401,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .visionneuse .scene video{width:100%;height:100%;max-height:100%;object-fit:contain;display:block;background:#000}
 .visionneuse .actions .bouton{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .visionneuse .actions .bouton.icone{flex:0 0 48px!important}
-@media (max-width:420px){.visionneuse .actions{gap:6px;padding-inline:8px}.visionneuse .actions .bouton{font-size:13px;padding:12px 4px}}
+@media (max-width:420px){.visionneuse .actions{gap:6px;padding-inline:8px}.visionneuse .actions .bouton{font-size:12.5px;padding:12px 3px;letter-spacing:-.01em}}
 .zone-texte textarea{padding-right:44px}
 .vider-prompt{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:50%;border:1px solid var(--trait);background:var(--surface-2);
   color:var(--texte-2);font-size:13px;display:grid;place-items:center;padding:0}
@@ -482,7 +482,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .emplacement-prompt{display:block}
   .emplacement-prompt .champ.prompt{margin:0}
   .emplacement-prompt .ligne-champ{display:none}
-  .emplacement-prompt textarea{min-height:88px;height:88px;padding:8px 11px;font-size:16px;line-height:1.4;transition:height .15s}
+  .emplacement-prompt textarea{min-height:88px;height:88px;padding:8px 44px 8px 11px;font-size:16px;line-height:1.4;transition:height .15s}
   .emplacement-prompt .aide-variantes{display:none}
   .atelier .action{flex:none;position:static;margin:0;padding:0;background:none}
   .atelier .action .generer,.atelier .action .stop{min-height:46px;height:46px}
@@ -1133,7 +1133,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-04c75506deda.tgz", sha: "04c75506deda9b5521fabd33f2812e3ae1d2df6e7f51d98ba81adf6d98b7c970"};
+const PAQUET = {fichier: "pod-fc4233d7e5a6.tgz", sha: "fc4233d7e5a679ab54364eb489904a513dc14f9ca02cba172758ab7f2d80353b"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
 // Blackwell de centre de données (B200, B300) : PyTorch 2.9.1 et CUDA 13, avec des bibliothèques plus récentes pour ces cartes.
 // Demande des machines à pilote récent : à utiliser dans un 2e modèle Runpod, avec le filtre « CUDA 13.0 » au déploiement.
@@ -1867,7 +1867,9 @@ function rendreFormulaireOptions() {
   if (enAttente) {
     sel.prepend(el("option", {value: F.modele, texte: "Modèle mémorisé : téléchargement en cours…", disabled: true}));
   } else if (!prin.find((m) => m.rel === F.modele)) {
-    const premier = prin.find((m) => m.defauts) || null;
+    // le modèle conseillé (fineporn v5) d'abord, sinon le premier pris en charge
+    const fine = (m) => m.defauts && ((m.source || "").includes("2762538") || /fineporn/i.test(`${m.nom} ${m.origine || ""} ${m.fichier}`));
+    const premier = prin.find(fine) || prin.find((m) => m.defauts) || null;
     F.modele = premier ? premier.rel : null;
     if (premier) appliquerDefauts(premier);
   }
@@ -2355,8 +2357,8 @@ function rendreOfficiels() {
   if (!inut.length) return;
   const total = String(Math.round(inut.reduce((t, x) => t + (x.go || x.mo / 1024), 0) * 10) / 10).replace(".", ",");
   box.append(el("div", {class: "bloc"},
-    el("p", {}, el("b", {texte: `Fichiers inutilisés sur cette B300 (${total} Go)`})),
-    el("p", {class: "tres-discret", texte: "Versions int8 (environ 30 fois plus lentes sur cette carte) ou remplacées par leur version bf16 : Studio ne s'en sert plus. Les supprimer libère la place pour les versions rapides. Rien n'est supprimé sans ta confirmation."}),
+    el("p", {}, el("b", {texte: `Fichiers inutilisés sur cette carte (${total} Go)`})),
+    el("p", {class: "tres-discret", texte: (A.modeles.b300 ? "Versions int8 (environ 30 fois plus lentes sur une B300) ou remplacées par une version plus adaptée" : "Versions remplacées par celle conseillée pour cette carte") + " : Studio ne s'en sert plus. Les supprimer libère de la place. Rien n'est supprimé sans ta confirmation."}),
     el("ul", {class: "liste-simple"}, ...inut.map((x) => el("li", {}, el("span", {class: "nom", texte: x.nom}),
       el("span", {class: "taille", texte: x.go >= 1 ? `${x.go} Go` : `${x.mo} Mo`})))),
     el("button", {class: "bouton plein", type: "button", id: "m-liberer", texte: `Supprimer ces ${inut.length} fichiers (${total} Go)`, onclick: () => libererInutiles(inut, total)})));
@@ -2678,7 +2680,7 @@ function rendreRetouche() {
   $("r-graine-fixe").checked = !!RT.grainefixe; $("r-graine").classList.toggle("cache", !RT.grainefixe);
   if (RT.graine !== null && $("r-graine").value !== String(RT.graine)) $("r-graine").value = RT.graine;
   $("r-nombre").textContent = RT.nombre;
-  $("r-modele-aide").textContent = !m ? "" : anyp ? "Krea 2 AnyPaint : inpainting et agrandissement sur masque, réglages de l'auteur (Turbo, 8 étapes, CFG 1)." : ident ? "Krea 2 Identity Edit : l'image est recréée selon ta consigne en gardant la ressemblance. Turbo pour la plupart des retouches ; Raw (CFG 3) pour supprimer quelque chose." :
+  $("r-modele-aide").textContent = !m ? "" : anyp ? "Krea 2 AnyPaint : inpainting et agrandissement sur masque, réglages de l'auteur (Turbo, 8 étapes, CFG 1)." : ident ? "Krea 2 Identity Edit : Turbo pour la plupart des retouches ; Raw (CFG 3) pour supprimer quelque chose." :
     qwen ? "Qwen Image 2.1 : retouche par consigne, jusqu'à 4 images de référence." :
     m.famille === "flux2" ? "Flux.2 Klein : fidèle à l'image d'origine, accepte une référence." :
     m.famille === "krea2" ? "Krea 2 : une référence possible avec son LoRA « Style Reference »." : "Retouche classique (inpainting), sans référence.";
@@ -3128,13 +3130,10 @@ function installErosEnCours() {
   return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "eros" && (t.etat === "attente" || t.etat === "encours"));
 }
 async function installerEros() {
-  const V = videosInv(), b3 = !!V.int8_lent;
-  const fichier = b3 ? "10Eros_Max_h3_TURBO-hybrid_beta5.safetensors (bf16, 40,2 Go)" : "10Eros_Max_h3_TURBO-hybrid_beta5_int8.safetensors (21 Go)";
-  const vae = b3 ? "minimax_h3_video_vae_fp16 (5,2 Go)" : "minimax_h3_video_vae_int8_convrot (2,8 Go)";
-  const te = b3 ? "qwen3vl_32b_minimax_h3_bf16 (51,5 Go)" : "qwen3vl_32b_minimax_h3_nvfp4_awq (15,7 Go)";
-  if (!(await confirmer(V.eros_a_completer ? "Installer les versions B300 ?" : "Installer 10Eros Max beta 5 ?",
-    `Fichier : ${fichier}, dépôt TenStrip/10Eros-Max sur Hugging Face, version figée et empreinte vérifiée` + (b3 ? " (versions imposées sur ta B300 : aucune en int8). " : ". ") +
-    `Plus, depuis Comfy-Org/MiniMax-H3, ceux qui manquent : l'encodeur ${te}, le VAE ${vae} et minimax_h3_audio_vae_fp32 (0,6 Go). Déjà présents : rien n'est retéléchargé. ` +
+  const V = videosInv(), plan = V.eros_plan || [];
+  if (!(await confirmer(V.eros_a_completer ? "Installer les versions conseillées ?" : "Installer 10Eros Max beta 5 ?",
+    "Fichiers choisis pour la carte du Pod, depuis Hugging Face (TenStrip/10Eros-Max et Comfy-Org/MiniMax-H3, versions figées, empreintes vérifiées) : " +
+    plan.map((x) => `${x.fichier} (${String(x.go).replace(".", ",")} Go)`).join(", ") + ". Les fichiers déjà présents ne sont pas retéléchargés. " +
     "Fusion communautaire en beta (accélération intégrée). Licence MiniMax H3 Community (hors UE, Royaume-Uni, Corée du Sud, États-Unis, Pod compris), plus celles de Wan 2.2, LTX 2.3 et Krea 2 pour les parties reprises : sous ta responsabilité.",
     "Installer", false))) return;
   if ($("a-installer-liste").checked && ajouterListe({lien: "studio:eros", nom: "10Eros Max beta 5 (MiniMax H3)"})) { sauver(); rendreListe(); }
@@ -3166,13 +3165,16 @@ function rendreAnimer() {
   const V = videosInv(), inst = installErosEnCours(), opti = !!V.eros_a_completer;
   const inut = (A.modeles && A.modeles.inutiles) || [], libre = Math.round(inut.reduce((t, x) => t + (x.go || 0), 0));
   $("a-installer").classList.toggle("cache", (!!V.eros && !opti) || !A.modeles);
-  $("a-installer-titre").textContent = opti ? "Versions B300 de 10Eros (vitesse et qualité maximales)" : "Modèle conseillé : 10Eros Max beta 5 (MiniMax H3)";
-  $("a-installer-texte").textContent = V.int8_lent
-    ? "Ta B300 calcule environ 30 fois moins vite en int8 : Studio n'utilise ici que les versions pleine précision, choisies d'office — 10Eros en bf16 (40 Go), l'encodeur de texte en bf16 (51,5 Go), le VAE vidéo en fp16 (5,2 Go) et le VAE audio (0,6 Go), seulement ceux qui manquent. Compte un volume d'au moins 200 Go." +
-      (libre ? ` ${libre} Go de fichiers int8 inutilisés peuvent être supprimés dans Modèles.` : "")
-    : "Vidéo avec son, pensée pour le contenu adulte, accélération intégrée (8 étapes). Depuis Hugging Face, version figée et empreintes vérifiées : le modèle (21 Go), plus l'encodeur de texte et les deux VAE de MiniMax H3 s'ils manquent (19 Go). Version choisie selon la carte du Pod.";
+  const plan = V.eros_plan || [], tot = String(Math.round(plan.reduce((t, x) => t + x.go, 0))).replace(".", ",");
+  const carte = V.carte === "b300" ? "ta B300" : V.carte === "grande" ? "ta carte de 80 Go et plus" : "ta carte";
+  const listePlan = plan.map((x) => `${x.fichier} (${String(x.go).replace(".", ",")} Go)`).join(", ");
+  $("a-installer-titre").textContent = opti ? `Versions conseillées pour ${carte}` : "Modèle conseillé : 10Eros Max beta 5 (MiniMax H3)";
+  $("a-installer-texte").textContent = (opti
+      ? `Studio choisit d'office les fichiers les plus rapides et les plus fidèles pour ${carte}${V.carte === "b300" ? " (jamais d'int8, ~30 fois plus lent sur une B300)" : V.carte === "grande" ? " (encodeur de texte en int8 convrot, plus fidèle que le 4 bits)" : ""}. À ajouter : ${listePlan} — ${tot} Go.`
+      : `Vidéo avec son, pensée pour le contenu adulte, accélération intégrée (8 étapes). Fichiers choisis pour ${carte}, depuis Hugging Face (version figée, empreintes vérifiées) : ${listePlan} — ${tot} Go.`) +
+    (libre ? ` ${libre} Go de fichiers inutilisés sur cette carte peuvent être supprimés dans Modèles.` : "");
   $("a-installer-btn").disabled = !!inst;
-  $("a-installer-btn").textContent = inst ? "Installation en cours… (voir Modèles)" : opti ? "Installer les versions B300" : "Installer 10Eros Max";
+  $("a-installer-btn").textContent = inst ? "Installation en cours… (voir Modèles)" : opti ? "Installer les versions conseillées" : "Installer 10Eros Max";
   const sel = $("a-modele"); sel.textContent = "";
   if (!V.modeles.length) sel.append(el("option", {value: "", texte: "Aucun modèle vidéo : installe 10Eros Max"}));
   for (const m of V.modeles) sel.append(el("option", {value: m.id, texte: m.nom}));
@@ -3363,7 +3365,7 @@ function majRapides() {
   // modèle conseillé pas encore installé : une pastille en tête, qui ouvre son bloc d'installation
   if (!$("f-reco").classList.contains("cache")) listes.f.push(["i", "＋ fineporn v5", () => ouvrirPlus("f", "f-reco-btn"), "Installer le modèle conseillé fineporn v5"]);
   if (!$("r-reco").classList.contains("cache")) listes.r.push(["i", "＋ Retouche conseillée", () => ouvrirPlus("r", "r-reco-btn"), "Installer fineporn v5, AnyPaint et Identity Edit"]);
-  if (!$("a-installer").classList.contains("cache")) listes.a.push(["i", videosInv().eros_a_completer ? "＋ 10Eros B300" : "＋ 10Eros Max", () => ouvrirPlus("a", "a-installer-btn"), "Installer le modèle vidéo conseillé 10Eros Max"]);
+  if (!$("a-installer").classList.contains("cache")) listes.a.push(["i", videosInv().eros_a_completer ? "＋ 10Eros optimisé" : "＋ 10Eros Max", () => ouvrirPlus("a", "a-installer-btn"), "Installer le modèle vidéo conseillé 10Eros Max"]);
   const wfF = !$("f-wf").classList.contains("cache"), wfR = !$("r-wf").classList.contains("cache");
   // Créer
   const selF = wfF ? $("f-workflow") : $("f-modele"), optF = selF.selectedOptions[0];
