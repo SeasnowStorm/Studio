@@ -859,8 +859,8 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <div class="titre-plus"><h2>Plus de réglages</h2><button class="croix" type="button" data-fermer-plus aria-label="Fermer">✕</button></div>
     <div class="panneau gauche">
     <div id="a-installer" class="bloc cache">
-      <p><b>Modèle conseillé : 10Eros Max beta 5 (MiniMax H3)</b></p>
-      <p class="tres-discret">Vidéo avec son, pensée pour le contenu adulte, accélération intégrée (8 étapes). Depuis Hugging Face, version figée et empreintes vérifiées : le modèle (21 Go), plus l'encodeur de texte et les deux VAE de MiniMax H3 s'ils manquent (19 Go).</p>
+      <p><b id="a-installer-titre">Modèle conseillé : 10Eros Max beta 5 (MiniMax H3)</b></p>
+      <p class="tres-discret" id="a-installer-texte"></p>
       <div class="interrupteur"><div><b>Ajouter à ma liste</b><small>Réinstallé automatiquement aux prochaines sessions</small></div><label class="bascule"><input type="checkbox" id="a-installer-liste" checked><span></span></label></div>
       <button class="bouton principal plein" type="button" id="a-installer-btn">Installer 10Eros Max</button>
     </div>
@@ -1004,7 +1004,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <div class="titre"><h2>Réglages</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
     <div class="reglages-grille"><section>
     <h3>Ton modèle Runpod (à créer une seule fois)</h3>
-    <p class="tres-discret">Sur runpod.io : Templates → New Template, type Pod. Container Disk 40 Go, Volume Disk 150 Go monté sur /workspace. Les mêmes valeurs servent sur tous tes appareils.</p>
+    <p class="tres-discret">Sur runpod.io : Templates → New Template, type Pod. Container Disk 40 Go, Volume Disk 150 Go monté sur /workspace. Les mêmes valeurs servent sur tous tes appareils. Pour une B200 ou B300, tu peux faire un 2e modèle identique avec l'image « CUDA 13 » ci-dessous, et cocher CUDA 13.0 dans les filtres au moment de déployer.</p>
     <div id="manuel-valeurs"></div>
     <div class="rangee" style="margin-top:10px"><button class="bouton petit" type="button" id="btn-cle-nouvelle">Nouvelle clé Studio</button><button class="bouton petit" type="button" id="btn-cle-saisir">Coller une clé Studio</button></div>
     <p class="tres-discret">La clé Studio sert seulement au premier appareil qui se connecte à un Pod neuf. Runpod la voit (elle est dans le modèle) : elle ne donne jamais accès à tes images, chaque appareil reçoit ensuite sa propre clé.</p>
@@ -1133,8 +1133,11 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-90204680a6bf.tgz", sha: "90204680a6bf1c030f1149d22b8bad21c2a0ec16499b0960cb20add8da343120"};
+const PAQUET = {fichier: "pod-04c75506deda.tgz", sha: "04c75506deda9b5521fabd33f2812e3ae1d2df6e7f51d98ba81adf6d98b7c970"};
 const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
+// Blackwell de centre de données (B200, B300) : PyTorch 2.9.1 et CUDA 13, avec des bibliothèques plus récentes pour ces cartes.
+// Demande des machines à pilote récent : à utiliser dans un 2e modèle Runpod, avec le filtre « CUDA 13.0 » au déploiement.
+const IMAGE_POD_CU13 = "runpod/pytorch:1.0.3-cu1300-torch291-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
   ["RTX 5090 · 32 Go", "Plus rapide d'environ un tiers, souvent moins disponible."],
@@ -1822,7 +1825,8 @@ function rendreReglages() {
   const box = $("manuel-valeurs"); box.textContent = "";
   const lignes = [["Container Image", IMAGE_POD], ["Container Start Command", `bash -c '${commandeDemarrage()}'`],
     ["Expose HTTP Ports", "8080"], ["Expose TCP Ports (facultatif : ComfyUI par SSH)", "22"],
-    ["Variable STUDIO_CLE (clé Studio)", S.cleStudio || "…"], ["Variable STUDIO_SITE", urlSite()]];
+    ["Variable STUDIO_CLE (clé Studio)", S.cleStudio || "…"], ["Variable STUDIO_SITE", urlSite()],
+    ["Container Image pour B200 / B300 (facultatif, 2e modèle, CUDA 13)", IMAGE_POD_CU13]];
   for (const [nom, valeur] of lignes) {
     box.append(el("div", {class: "valeur"}, el("div", {}, el("small", {texte: nom}), el("code", {texte: valeur})),
       el("button", {class: "bouton petit", type: "button", texte: "Copier", onclick: () => copier(valeur, nom)})));
@@ -1852,7 +1856,7 @@ function appliquerDefauts(m) {
 
 function rendreFormulaireOptions() {
   const sel = $("f-modele"); sel.textContent = "";
-  const prin = A.modeles ? A.modeles.principaux.filter((m) => !m.video) : [];
+  const prin = A.modeles ? A.modeles.principaux.filter((m) => !m.video && !m.lent) : [];   // B300 : pas d'int8
   if (!prin.length) sel.append(el("option", {value: "", texte: "Aucun modèle : ajoute-en un dans Modèles"}));
   for (const m of prin) {
     const lib = m.nom + (m.defauts ? " · " + m.defauts.variante : " · non pris en charge");
@@ -2342,8 +2346,30 @@ async function annulerTelechargement(t, bouton) {
 }
 
 function rendreOfficiels() {
-  // Chaque onglet propose son modèle conseillé : Créer (fineporn v5), Retoucher (Qwen Image 2.1), Animer (Wan 2.2).
-  $("m-officiels").textContent = "";
+  // Chaque onglet propose son modèle conseillé (Créer, Retoucher, Animer) ; ici seulement, sur une B300,
+  // les fichiers que cette carte n'utilisera jamais (int8, ou remplacés par leur version bf16), à supprimer si besoin.
+  const box = $("m-officiels"), inut = (A.modeles && A.modeles.inutiles) || [];
+  const sig = inut.map((x) => x.chemin).join("|");
+  if (box.dataset.sig === sig) return;
+  box.dataset.sig = sig; box.textContent = "";
+  if (!inut.length) return;
+  const total = String(Math.round(inut.reduce((t, x) => t + (x.go || x.mo / 1024), 0) * 10) / 10).replace(".", ",");
+  box.append(el("div", {class: "bloc"},
+    el("p", {}, el("b", {texte: `Fichiers inutilisés sur cette B300 (${total} Go)`})),
+    el("p", {class: "tres-discret", texte: "Versions int8 (environ 30 fois plus lentes sur cette carte) ou remplacées par leur version bf16 : Studio ne s'en sert plus. Les supprimer libère la place pour les versions rapides. Rien n'est supprimé sans ta confirmation."}),
+    el("ul", {class: "liste-simple"}, ...inut.map((x) => el("li", {}, el("span", {class: "nom", texte: x.nom}),
+      el("span", {class: "taille", texte: x.go >= 1 ? `${x.go} Go` : `${x.mo} Mo`})))),
+    el("button", {class: "bouton plein", type: "button", id: "m-liberer", texte: `Supprimer ces ${inut.length} fichiers (${total} Go)`, onclick: () => libererInutiles(inut, total)})));
+}
+async function libererInutiles(inut, total) {
+  if (!(await confirmer("Supprimer les fichiers inutilisés ?", `${inut.length} fichiers (${total} Go) sont effacés du disque du Pod : ${inut.map((x) => x.nom).join(", ")}. Ils ne servent pas sur cette carte ; sur une autre carte, Studio les retéléchargerait si besoin.`, "Supprimer"))) return;
+  let n = 0;
+  for (const x of inut) {
+    try { await A.canal.appel("supprimer_modele", {chemin: x.chemin}); n++; }
+    catch (e) { toast(e.message, true); break; }
+  }
+  if (n) toast(`${n} fichier(s) supprimé(s) du Pod.`);
+  A.demandeModeles++; A.versionModeles = -1; boucle();
 }
 
 function rendreModeles() {
@@ -2369,7 +2395,7 @@ function elementModele(x, groupe) {
   const exact = x.origine && x.origine !== x.fichier ? `${x.origine} (sur le disque : ${x.fichier})` : (x.fichier || x.rel);
   const details = el("div", {class: "details-modele"},
     el("span", {texte: "Fichier : " + exact}),
-    el("span", {texte: "Variante : " + (x.variante || "non indiquée")}),
+    el("span", {texte: "Variante : " + (x.variante || "non indiquée") + (x.lent ? " · inutilisé sur cette B300 (int8, très lent sur cette carte)" : "")}),
     src ? el("span", {}, "Source : ", el("a", {href: src, target: "_blank", rel: "noopener noreferrer", texte: src}))
         : el("span", {texte: "Source : non connue (relancement du Studio sur ce Pod, ou fichier ajouté à la main)"}));
   return el("li", {},
@@ -2485,7 +2511,7 @@ let sauverRTMinuteur;
 function sauverRT() { clearTimeout(sauverRTMinuteur); sauverRTMinuteur = setTimeout(() => {
   const {source, references, ...reste} = RT; S.retouche = reste; sauver(); }, 400); }
 const historiqueMasque = [];
-function modelesRetouche() { return A.modeles ? A.modeles.principaux.filter((m) => m.defauts) : []; }
+function modelesRetouche() { return A.modeles ? A.modeles.principaux.filter((m) => m.defauts && !m.lent) : []; }
 function modeleRT() { return modelesRetouche().find((m) => m.rel === RT.modele) || null; }
 function loraReference() { return A.modeles && A.modeles.loras.find((l) => l.reference) || null; }
 function forceDefaut(m) { return m && m.famille === "qwen21" ? 1 : 0.85; }
@@ -3070,7 +3096,8 @@ function choisirVue(v) {
 // ------------------------------------------------------------ modèle conseillé de Créer : fineporn v5 (Krea 2)
 const FINEPORN = {lien: "https://civitai.red/models/2762538?modelVersionId=3361846", nom: "fineporn v5"};
 function finepornInstalle() {
-  return !!(A.modeles && A.modeles.principaux.some((m) => (m.source || "").includes("2762538") || /fineporn/i.test(`${m.nom} ${m.origine || ""} ${m.fichier}`)));
+  // sur une B300, une version int8 de fineporn ne compte pas : elle n'est pas utilisée, la version bf16 est proposée
+  return !!(A.modeles && A.modeles.principaux.some((m) => !m.lent && ((m.source || "").includes("2762538") || /fineporn/i.test(`${m.nom} ${m.origine || ""} ${m.fichier}`))));
 }
 function installFinepornEnCours() {
   return A.etat && A.etat.travaux.find((t) => t.type === "telechargement" && t.titre === FINEPORN.nom && (t.etat === "attente" || t.etat === "encours"));
@@ -3101,11 +3128,13 @@ function installErosEnCours() {
   return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === "eros" && (t.etat === "attente" || t.etat === "encours"));
 }
 async function installerEros() {
-  const V = videosInv(), dejaH3 = V.h3 || V.h3ref;
-  if (!(await confirmer("Installer 10Eros Max beta 5 ?",
-    "Fichier ajouté : 10Eros_Max_h3_TURBO-hybrid_beta5_int8.safetensors (21 Go), dépôt TenStrip/10Eros-Max sur Hugging Face, version figée et empreinte vérifiée. " +
-    (dejaH3 ? "L'encodeur de texte et les deux VAE de MiniMax H3 déjà installés resservent. "
-            : "Plus, depuis Comfy-Org/MiniMax-H3 : l'encodeur qwen3vl_32b_minimax_h3_nvfp4_awq (15,7 Go), les VAE minimax_h3_video_vae_int8_convrot (2,8 Go) et minimax_h3_audio_vae_fp32 (0,6 Go). ") +
+  const V = videosInv(), b3 = !!V.int8_lent;
+  const fichier = b3 ? "10Eros_Max_h3_TURBO-hybrid_beta5.safetensors (bf16, 40,2 Go)" : "10Eros_Max_h3_TURBO-hybrid_beta5_int8.safetensors (21 Go)";
+  const vae = b3 ? "minimax_h3_video_vae_fp16 (5,2 Go)" : "minimax_h3_video_vae_int8_convrot (2,8 Go)";
+  const te = b3 ? "qwen3vl_32b_minimax_h3_bf16 (51,5 Go)" : "qwen3vl_32b_minimax_h3_nvfp4_awq (15,7 Go)";
+  if (!(await confirmer(V.eros_a_completer ? "Installer les versions B300 ?" : "Installer 10Eros Max beta 5 ?",
+    `Fichier : ${fichier}, dépôt TenStrip/10Eros-Max sur Hugging Face, version figée et empreinte vérifiée` + (b3 ? " (versions imposées sur ta B300 : aucune en int8). " : ". ") +
+    `Plus, depuis Comfy-Org/MiniMax-H3, ceux qui manquent : l'encodeur ${te}, le VAE ${vae} et minimax_h3_audio_vae_fp32 (0,6 Go). Déjà présents : rien n'est retéléchargé. ` +
     "Fusion communautaire en beta (accélération intégrée). Licence MiniMax H3 Community (hors UE, Royaume-Uni, Corée du Sud, États-Unis, Pod compris), plus celles de Wan 2.2, LTX 2.3 et Krea 2 pour les parties reprises : sous ta responsabilité.",
     "Installer", false))) return;
   if ($("a-installer-liste").checked && ajouterListe({lien: "studio:eros", nom: "10Eros Max beta 5 (MiniMax H3)"})) { sauver(); rendreListe(); }
@@ -3134,10 +3163,16 @@ function rendreRefsAnim(max) {
 }
 function dureesAni(m) { return m && m.h3 ? [5, 8, 12] : [3, 5, 8]; }
 function rendreAnimer() {
-  const V = videosInv(), inst = installErosEnCours();
-  $("a-installer").classList.toggle("cache", !!V.eros || !A.modeles);
+  const V = videosInv(), inst = installErosEnCours(), opti = !!V.eros_a_completer;
+  const inut = (A.modeles && A.modeles.inutiles) || [], libre = Math.round(inut.reduce((t, x) => t + (x.go || 0), 0));
+  $("a-installer").classList.toggle("cache", (!!V.eros && !opti) || !A.modeles);
+  $("a-installer-titre").textContent = opti ? "Versions B300 de 10Eros (vitesse et qualité maximales)" : "Modèle conseillé : 10Eros Max beta 5 (MiniMax H3)";
+  $("a-installer-texte").textContent = V.int8_lent
+    ? "Ta B300 calcule environ 30 fois moins vite en int8 : Studio n'utilise ici que les versions pleine précision, choisies d'office — 10Eros en bf16 (40 Go), l'encodeur de texte en bf16 (51,5 Go), le VAE vidéo en fp16 (5,2 Go) et le VAE audio (0,6 Go), seulement ceux qui manquent. Compte un volume d'au moins 200 Go." +
+      (libre ? ` ${libre} Go de fichiers int8 inutilisés peuvent être supprimés dans Modèles.` : "")
+    : "Vidéo avec son, pensée pour le contenu adulte, accélération intégrée (8 étapes). Depuis Hugging Face, version figée et empreintes vérifiées : le modèle (21 Go), plus l'encodeur de texte et les deux VAE de MiniMax H3 s'ils manquent (19 Go). Version choisie selon la carte du Pod.";
   $("a-installer-btn").disabled = !!inst;
-  $("a-installer-btn").textContent = inst ? "Installation en cours… (voir Modèles)" : "Installer 10Eros Max";
+  $("a-installer-btn").textContent = inst ? "Installation en cours… (voir Modèles)" : opti ? "Installer les versions B300" : "Installer 10Eros Max";
   const sel = $("a-modele"); sel.textContent = "";
   if (!V.modeles.length) sel.append(el("option", {value: "", texte: "Aucun modèle vidéo : installe 10Eros Max"}));
   for (const m of V.modeles) sel.append(el("option", {value: m.id, texte: m.nom}));
@@ -3328,7 +3363,7 @@ function majRapides() {
   // modèle conseillé pas encore installé : une pastille en tête, qui ouvre son bloc d'installation
   if (!$("f-reco").classList.contains("cache")) listes.f.push(["i", "＋ fineporn v5", () => ouvrirPlus("f", "f-reco-btn"), "Installer le modèle conseillé fineporn v5"]);
   if (!$("r-reco").classList.contains("cache")) listes.r.push(["i", "＋ Retouche conseillée", () => ouvrirPlus("r", "r-reco-btn"), "Installer fineporn v5, AnyPaint et Identity Edit"]);
-  if (!$("a-installer").classList.contains("cache")) listes.a.push(["i", "＋ 10Eros Max", () => ouvrirPlus("a", "a-installer-btn"), "Installer le modèle vidéo conseillé 10Eros Max"]);
+  if (!$("a-installer").classList.contains("cache")) listes.a.push(["i", videosInv().eros_a_completer ? "＋ 10Eros B300" : "＋ 10Eros Max", () => ouvrirPlus("a", "a-installer-btn"), "Installer le modèle vidéo conseillé 10Eros Max"]);
   const wfF = !$("f-wf").classList.contains("cache"), wfR = !$("r-wf").classList.contains("cache");
   // Créer
   const selF = wfF ? $("f-workflow") : $("f-modele"), optF = selF.selectedOptions[0];
