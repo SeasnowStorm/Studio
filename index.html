@@ -267,7 +267,7 @@ code.en-ligne{font:13px ui-monospace,Menlo,monospace;color:var(--texte);backgrou
   .feuille{left:50%;right:auto;bottom:auto;top:8vh;transform:translateX(-50%);width:min(600px,92vw);border:1px solid var(--trait);
     border-radius:var(--r-grand);max-height:84vh}
   .feuille .poignee{display:none}
-  .toast{bottom:auto;top:74px}   /* PC : en haut, sans masquer la zone de saisie */
+  .toast{left:auto;right:32px;bottom:28px;top:auto;width:290px;margin:0}   /* PC : en bas à droite, hors de la zone de saisie */
   .visionneuse .scene img{max-height:calc(100vh - 220px)}
   .toile canvas{cursor:none}
 }
@@ -1004,7 +1004,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <div class="titre"><h2>Réglages</h2><button class="croix" type="button" data-fermer aria-label="Fermer">✕</button></div>
     <div class="reglages-grille"><section>
     <h3>Ton modèle Runpod (à créer une seule fois)</h3>
-    <p class="tres-discret">Sur runpod.io : Templates → New Template, type Pod. Container Disk 40 Go, Volume Disk 150 Go monté sur /workspace. Les mêmes valeurs servent sur tous tes appareils. Pour une B200 ou B300, tu peux faire un 2e modèle identique avec l'image « CUDA 13 » ci-dessous, et cocher CUDA 13.0 dans les filtres au moment de déployer.</p>
+    <p class="tres-discret">Sur runpod.io : Templates → New Template, type Pod. Container Disk 40 Go, Volume Disk 150 Go monté sur /workspace. Les mêmes valeurs servent sur tous tes appareils. Au moment de déployer un Pod, coche « CUDA 13.0 » dans les filtres (ou plus récent) : l'image en a besoin pour les calculs optimisés.</p>
     <div id="manuel-valeurs"></div>
     <div class="rangee" style="margin-top:10px"><button class="bouton petit" type="button" id="btn-cle-nouvelle">Nouvelle clé Studio</button><button class="bouton petit" type="button" id="btn-cle-saisir">Coller une clé Studio</button></div>
     <p class="tres-discret">La clé Studio sert seulement au premier appareil qui se connecte à un Pod neuf. Runpod la voit (elle est dans le modèle) : elle ne donne jamais accès à tes images, chaque appareil reçoit ensuite sa propre clé.</p>
@@ -1133,11 +1133,11 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-fc4233d7e5a6.tgz", sha: "fc4233d7e5a679ab54364eb489904a513dc14f9ca02cba172758ab7f2d80353b"};
-const IMAGE_POD = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404";
-// Blackwell de centre de données (B200, B300) : PyTorch 2.9.1 et CUDA 13, avec des bibliothèques plus récentes pour ces cartes.
-// Demande des machines à pilote récent : à utiliser dans un 2e modèle Runpod, avec le filtre « CUDA 13.0 » au déploiement.
-const IMAGE_POD_CU13 = "runpod/pytorch:1.0.3-cu1300-torch291-ubuntu2404";
+const PAQUET = {fichier: "pod-74ab1dc3fbc8.tgz", sha: "74ab1dc3fbc8ea24d3f4e4a2f55ce0a35452d45184998b5463dad3b518c49fed"};
+// PyTorch 2.9.1 pour CUDA 13 : indispensable aux noyaux optimisés de ComfyUI (comfy-kitchen : int8 convrot, nvfp4, fp8,
+// RoPE, RMSNorm), désactivés avec CUDA 12. Demande une machine à pilote récent (r580+) : filtre « CUDA 13.0 » au déploiement.
+// Avec une ancienne image (CUDA 12), le Pod installe lui-même PyTorch CUDA 13 au démarrage si le pilote le permet.
+const IMAGE_POD = "runpod/pytorch:1.0.3-cu1300-torch291-ubuntu2404";
 const GUIDE_GPU = [
   ["RTX 4090 · 24 Go", "Le bon choix par défaut : Qwen Image 2.1 (int8), Krea 2, Klein et SDXL tournent bien."],
   ["RTX 5090 · 32 Go", "Plus rapide d'environ un tiers, souvent moins disponible."],
@@ -1825,8 +1825,7 @@ function rendreReglages() {
   const box = $("manuel-valeurs"); box.textContent = "";
   const lignes = [["Container Image", IMAGE_POD], ["Container Start Command", `bash -c '${commandeDemarrage()}'`],
     ["Expose HTTP Ports", "8080"], ["Expose TCP Ports (facultatif : ComfyUI par SSH)", "22"],
-    ["Variable STUDIO_CLE (clé Studio)", S.cleStudio || "…"], ["Variable STUDIO_SITE", urlSite()],
-    ["Container Image pour B200 / B300 (facultatif, 2e modèle, CUDA 13)", IMAGE_POD_CU13]];
+    ["Variable STUDIO_CLE (clé Studio)", S.cleStudio || "…"], ["Variable STUDIO_SITE", urlSite()]];
   for (const [nom, valeur] of lignes) {
     box.append(el("div", {class: "valeur"}, el("div", {}, el("small", {texte: nom}), el("code", {texte: valeur})),
       el("button", {class: "bouton petit", type: "button", texte: "Copier", onclick: () => copier(valeur, nom)})));
