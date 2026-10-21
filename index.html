@@ -902,6 +902,10 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
         <label class="champ" id="a-cfg-champ"><span>CFG</span><input type="number" id="a-cfg" inputmode="decimal" step="0.1" min="1" max="10"></label>
       </div>
       <p class="tres-discret" id="a-avance-note">Le mode rapide impose 4 étapes et un CFG de 1.</p>
+      <div class="interrupteur cache" id="a-son-eros-bloc">
+        <div><b>Priorité au son</b><small>Échantillonneur LCM, conseillé par l'auteur de 10Eros pour le meilleur son ; mouvement un peu moins précis</small></div>
+        <label class="bascule"><input type="checkbox" id="a-son-eros"><span></span></label>
+      </div>
       <div class="interrupteur">
         <div><b>Graine fixe</b><small>Même graine = même vidéo avec les mêmes réglages</small></div>
         <label class="bascule"><input type="checkbox" id="a-graine-fixe"><span></span></label>
@@ -1133,7 +1137,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-9794e5834b7b.tgz", sha: "9794e5834b7bb423bcd96bec6017fc0289f3ed22bafb82c4bc509536ec5344c3"};
+const PAQUET = {fichier: "pod-dcbd277f4f97.tgz", sha: "dcbd277f4f97ffae4d438801f8a74029a8e3123d376ad48229730906959dfa6b"};
 // PyTorch 2.9.1 pour CUDA 13 : indispensable aux noyaux optimisés de ComfyUI (comfy-kitchen : int8 convrot, nvfp4, fp8,
 // RoPE, RMSNorm), désactivés avec CUDA 12. Demande une machine à pilote récent (r580+) : filtre « CUDA 13.0 » au déploiement.
 // Avec une ancienne image (CUDA 12), le Pod installe lui-même PyTorch CUDA 13 au démarrage si le pilote le permet.
@@ -2087,7 +2091,7 @@ function remplirDepuis(r, nombre = 1) {
       rapide: !!r.rapide, nombre, steps: r.steps || 20, cfg: r.cfg || 3.5, grainefixe: true, graine: r.graine,
       loras: r.h3 ? AN.loras : (r.loras || []).filter((x) => x.id).map((x) => ({id: x.id, poids: x.poids, actif: true})),
       lorasH3: r.h3 ? (r.loras || []).filter((x) => x.fichier).map((x) => ({id: x.fichier, poids: x.poids, actif: true})) : AN.lorasH3,
-      stepsEros: r.eros ? r.steps || 8 : AN.stepsEros});
+      stepsEros: r.eros ? r.steps || 8 : AN.stepsEros, sonEros: r.eros ? !!r.son : AN.sonEros});
     sauverAN(); choisirVue("animer"); rendreAnimer(); window.scrollTo({top: 0}); return;
   }
   if (r.mode === "workflow") {
@@ -3118,7 +3122,7 @@ async function installerFineporn() {
 }
 
 // ------------------------------------------------------------ Animer : image → vidéo (Wan 2.2)
-const AN_DEFAUTS = {modele: null, prompt: "", negatif: "", duree: 5, qualite: "480p", rapide: true, nombre: 1, loras: [], lorasH3: [], stepsEros: 8,
+const AN_DEFAUTS = {modele: null, prompt: "", negatif: "", duree: 5, qualite: "480p", rapide: true, nombre: 1, loras: [], lorasH3: [], stepsEros: 8, sonEros: false,
   steps: 20, cfg: 3.5, grainefixe: false, graine: null};
 const AN = Object.assign({}, AN_DEFAUTS, S.anime || {}, {source: null, references: []});
 let sauverANMinuteur = null;
@@ -3218,6 +3222,7 @@ function rendreAnimer() {
   const quatre = !h3 && (integre || !!(AN.rapide && rapideOk)), huit = h3 && !eros && !!(AN.rapide && rapideOk);
   $("a-steps").value = eros ? AN.stepsEros : huit ? (refMode ? 4 : 8) : quatre ? 4 : AN.steps; $("a-cfg").value = quatre ? 1 : AN.cfg;
   $("a-steps").disabled = !eros && (quatre || huit); $("a-cfg").disabled = quatre;
+  $("a-son-eros-bloc").classList.toggle("cache", !eros); $("a-son-eros").checked = !!AN.sonEros;
   if (eros) $("a-avance-note").textContent = "10Eros : 6 à 8 étapes conseillées par l'auteur (8 par défaut). Ni CFG ni « À éviter ».";
   $("a-graine-fixe").checked = !!AN.grainefixe; $("a-graine").classList.toggle("cache", !AN.grainefixe);
   if (AN.grainefixe && document.activeElement !== $("a-graine")) $("a-graine").value = AN.graine ?? "";
@@ -3299,7 +3304,7 @@ function demandeAnimer() {
   const graines = [], prompts = [];
   for (let i = 0; i < AN.nombre; i++) { graines.push(base + i); prompts.push(variantes(prompt, prng(base + i))); }
   return {reglages: {modele: AN.modele, source: AN.source ? AN.source.id : null, references: mod.ref ? AN.references.map((r) => r.id) : [], duree: AN.duree, qualite: AN.qualite, rapide: !!AN.rapide && (mod.h3 ? !!mod.rapide : V.rapide),
-    negatif: AN.negatif, loras: AN.loras, loras_h3: AN.lorasH3, steps: AN.steps, steps_eros: AN.stepsEros, cfg: AN.cfg}, prompts, graines};
+    negatif: AN.negatif, loras: AN.loras, loras_h3: AN.lorasH3, steps: AN.steps, steps_eros: AN.stepsEros, son_eros: !!AN.sonEros, cfg: AN.cfg}, prompts, graines};
 }
 async function animer() {
   const dem = demandeAnimer(); if (!dem) return;
@@ -3537,6 +3542,7 @@ function brancher() {
     else AN.steps = Math.max(2, Math.min(80, parseInt(e.target.value, 10) || 20));
     sauverAN(); rendreAnimer(); };
   $("a-cfg").onchange = (e) => { AN.cfg = Math.max(1, Math.min(10, parseFloat(e.target.value) || 3.5)); sauverAN(); rendreAnimer(); };
+  $("a-son-eros").onchange = (e) => { AN.sonEros = e.target.checked; sauverAN(); rendreAnimer(); };
   $("a-graine-fixe").onchange = (e) => { AN.grainefixe = e.target.checked; if (AN.grainefixe && !Number.isFinite(AN.graine)) AN.graine = nouvelleGraine(); sauverAN(); rendreAnimer(); };
   $("a-graine").onchange = (e) => { AN.graine = parseInt(e.target.value, 10); sauverAN(); };
   $("a-decrire").onclick = () => ouvrirDescription("a-prompt", AN.source ? {id: AN.source.id, url: AN.source.url} : null);
