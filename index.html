@@ -742,7 +742,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <div id="r-krea-bloc" class="cache">
       <h3>Méthode de retouche Krea 2</h3>
       <div class="segments" id="r-krea-mode" role="group" aria-label="Méthode Krea 2">
-        <button type="button" data-mode="classique">Classique</button><button type="button" data-mode="anypaint">AnyPaint</button><button type="button" data-mode="identite">Identity Edit</button>
+        <button type="button" data-mode="classique">Classique</button><button type="button" data-mode="anypaint">AnyPaint</button><button type="button" data-mode="identite">Identity Edit</button><button type="button" data-mode="general">General Edit</button>
       </div>
       <p class="tres-discret" id="r-krea-aide"></p>
       <div id="r-adapt-installer" class="bloc cache">
@@ -774,9 +774,9 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
     <p class="tres-discret" id="r-force-aide">Faible : retouche légère qui garde l'original. Forte : la zone est entièrement recréée.</p>
     </div>
     <div id="r-ressemblance-bloc" class="cache">
-    <h3>Ressemblance <output id="r-ressemblance-val" class="tres-discret"></output></h3>
+    <h3><span id="r-ressemblance-titre">Ressemblance</span> <output id="r-ressemblance-val" class="tres-discret"></output></h3>
     <input type="range" id="r-ressemblance" min="0" max="10" step="0.5" class="plein-largeur" aria-label="Ressemblance">
-    <p class="tres-discret">4 (conseillé) : visage et silhouette bien gardés. 1 : plus de liberté. Au-delà de 10, les suppressions et remplacements échouent.</p>
+    <p class="tres-discret" id="r-ressemblance-aide"></p>
     </div>
     </div>
     <div id="r-wf" class="cache"></div>
@@ -805,6 +805,10 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
         <label class="champ cache r-marge"><span>Agrandir à droite (px)</span><input type="number" id="r-marge-droite" inputmode="numeric" min="0" max="1024" step="16"></label>
         <label class="champ cache r-marge"><span>Agrandir en haut (px)</span><input type="number" id="r-marge-haut" inputmode="numeric" min="0" max="1024" step="16"></label>
         <label class="champ cache r-marge"><span>Agrandir en bas (px)</span><input type="number" id="r-marge-bas" inputmode="numeric" min="0" max="1024" step="16"></label>
+        <label class="champ cache" id="r-version-champ"><span>Version d'Identity Edit</span><select id="r-version">
+          <option value="v2">V2 (conseillée)</option><option value="v1.2">v1.2 (pour comparer)</option></select></label>
+        <label class="champ cache" id="r-placement-champ"><span>Placement de la personne</span><select id="r-placement">
+          <option value="auto">Automatique (conseillé)</option><option value="aligne">Calée sur l'image</option><option value="cote">Libre (pose plus libre)</option></select></label>
         <label class="champ cache" id="r-grounding-champ"><span>Vision de la consigne</span><select id="r-grounding">
           <option value="512">512 px (suit mieux la consigne)</option><option value="640">640 px</option><option value="768">768 px (conseillé)</option><option value="1024">1024 px (garde mieux la ressemblance)</option></select></label>
       </div>
@@ -1137,7 +1141,7 @@ dialog{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 <script>
 "use strict";
 const VERSION_APP = "1.0";
-const PAQUET = {fichier: "pod-dcbd277f4f97.tgz", sha: "dcbd277f4f97ffae4d438801f8a74029a8e3123d376ad48229730906959dfa6b"};
+const PAQUET = {fichier: "pod-306ab918e077.tgz", sha: "306ab918e07725e648b3f88f67120d35674ba91852d1830c57c2f97492c8499f"};
 // PyTorch 2.9.1 pour CUDA 13 : indispensable aux noyaux optimisés de ComfyUI (comfy-kitchen : int8 convrot, nvfp4, fp8,
 // RoPE, RMSNorm), désactivés avec CUDA 12. Demande une machine à pilote récent (r580+) : filtre « CUDA 13.0 » au déploiement.
 // Avec une ancienne image (CUDA 12), le Pod installe lui-même PyTorch CUDA 13 au démarrage si le pilote le permet.
@@ -2504,12 +2508,13 @@ function choisirDansGalerie() {
 // Réglages propres à la retouche (indépendants de Créer) ; null = valeur conseillée du modèle choisi.
 const RT_DEFAUTS = {source: null, references: [], prompt: "", negatif: "", modele: null, force: null, tout: false, proteger: true,
   rapide: false, loras: [], nombre: 1, extension: 8, flou: 9, steps: null, cfg: null, sampler: null, scheduler: null,
-  grainefixe: false, graine: null, outil: "peindre", taille: 48, workflow: null, identite: false, ressemblance: 4, grounding: 768,
-  modeKrea: "classique", marges: {gauche: 0, droite: 0, haut: 0, bas: 0}};
+  grainefixe: false, graine: null, outil: "peindre", taille: 48, workflow: null, identite: false, ressemblance: 2, fidelite: 4, grounding: 768,
+  versionIdentite: "v2", placement: "auto", modeKrea: "classique", marges: {gauche: 0, droite: 0, haut: 0, bas: 0}};
 const RT = Object.assign({}, RT_DEFAUTS, S.retouche || {}, {source: null, references: []});
 if (!Array.isArray(RT.loras)) RT.loras = [];
 if (RT.identite && RT.modeKrea === "classique") RT.modeKrea = "identite";   // version précédente : interrupteur Identity Edit
 delete RT.identite;
+if (!RT.versionIdentite) { RT.versionIdentite = "v2"; RT.ressemblance = 2; }   // passage à Identity Edit V2 : force conseillée 2 (au lieu de 4)
 if (!RT.marges || typeof RT.marges !== "object") RT.marges = {gauche: 0, droite: 0, haut: 0, bas: 0};      // ancienne version : simple interrupteur « Appliquer mes LoRA »
 delete RT.reference;
 let sauverRTMinuteur;
@@ -2523,19 +2528,27 @@ function forceDefaut(m) { return m && m.famille === "qwen21" ? 1 : 0.85; }
 // Krea 2 Identity Edit : mode actif seulement avec un modèle Krea 2, le LoRA installé et sans workflow personnel
 // Adaptateurs Krea 2 (LoRA fonctionnels + extensions livrées avec Studio)
 const ADAPT = {
-  identite: {nom: "Krea 2 Identity Edit", texte: "LoRA « Krea 2 Identity Edit » v1.2 (conradlocke, licence Krea 2 Community) : 1,8 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Krea2Edit livrée et relue avec Studio."},
+  identite: {nom: "Krea 2 Identity Edit V2", texte: "LoRA « Krea 2 Identity Edit » V2 (conradlocke, licence de l'auteur : usage personnel et non commercial) : 1,8 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Krea2Edit 2.0 livrée et relue avec Studio."},
+  general: {nom: "Krea 2 General Edit V2", texte: "LoRA « Krea 2 General Edit » V2 (conradlocke, licence de l'auteur : usage personnel et non commercial) : 1,8 Go depuis Hugging Face, vérifié par son empreinte. Retouche par consigne (enlever, recolorer, changer le fond ou la lumière…), avec l'extension Krea2Edit 2.0 livrée avec Studio."},
+  identite12: {nom: "Krea 2 Identity Edit v1.2", texte: "Ancienne version (v1.2, licence Krea 2 Community), gardée pour comparer avec la V2 : 1,8 Go depuis Hugging Face, vérifié par son empreinte."},
   anypaint: {nom: "Krea 2 AnyPaint", texte: "LoRA « Krea 2 AnyPaint » (yijunwang2, licence Krea 2 Community) : 0,23 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Krea2 AnyPaint livrée et relue avec Studio."},
   reid: {nom: "Krea 2 ReID", texte: "LoRA « Krea 2 ReID » (yijunwang2, licence Krea 2 Community) : 0,23 Go depuis Hugging Face, vérifié par son empreinte. Il s'utilise avec l'extension Ostris Edit livrée et relue avec Studio."},
 };
 function adaptInstalle(k) { return !!(A.modeles && A.modeles.adaptateurs && A.modeles.adaptateurs[k]); }
 function adaptEnCours(k) { return A.etat && A.etat.travaux.find((t) => t.type === "officiel" && t.quoi === k && (t.etat === "attente" || t.etat === "encours")); }
-function modeKrea(m = modeleRT()) { return m && m.famille === "krea2" && !wfCourant("r") && adaptInstalle(RT.modeKrea) ? RT.modeKrea : "classique"; }
+// fichier nécessaire à une méthode : Identity Edit en v1.2 si choisie dans les réglages fins
+function adaptMode(mode) { return mode === "identite" && RT.versionIdentite === "v1.2" ? "identite12" : mode; }
+function modeKrea(m = modeleRT()) { return m && m.famille === "krea2" && !wfCourant("r") && RT.modeKrea !== "classique" && adaptInstalle(adaptMode(RT.modeKrea)) ? RT.modeKrea : "classique"; }
 function modeIdentite(m = modeleRT()) { return modeKrea(m) === "identite"; }
+function modeGeneral(m = modeleRT()) { return modeKrea(m) === "general"; }
+function modeEdit(m = modeleRT()) { const k = modeKrea(m); return k === "identite" || k === "general"; }   // extension Krea2Edit
 function modeAnypaint(m = modeleRT()) { return modeKrea(m) === "anypaint"; }
 function defautsRT(m) {   // réglages conseillés du modèle ; avec un adaptateur, ceux de son auteur
   const d = m && m.defauts; if (!d) return null;
   const k = modeKrea(m), turbo = d.variante === "Turbo";
-  if (k === "identite") return Object.assign({}, d, {steps: turbo ? 10 : 30, cfg: turbo ? 1 : 3, negatif: false});
+  // réglages de l'auteur : V2 Turbo 8 étapes CFG 1 ; General Edit Raw 20 étapes CFG 3 ; v1.2 Turbo 10 étapes
+  if (k === "identite") return Object.assign({}, d, {steps: turbo ? (RT.versionIdentite === "v1.2" ? 10 : 8) : 30, cfg: turbo ? 1 : 3, negatif: false});
+  if (k === "general") return Object.assign({}, d, {steps: turbo ? 8 : 20, cfg: turbo ? 1 : 3, negatif: false});
   if (k === "anypaint") return Object.assign({}, d, turbo ? {steps: 8, cfg: 1, negatif: false} : {});
   return d;
 }
@@ -2545,7 +2558,7 @@ function avecMarges() { const g = margesRT(); return !!(g.gauche || g.droite || 
 function maxReferences(m) {
   if (!m) return 0;
   if (modeIdentite(m)) return 1;
-  if (modeAnypaint(m)) return 0;
+  if (modeAnypaint(m) || modeGeneral(m)) return 0;
   if (m.famille === "qwen21") return 4;
   if (m.famille === "flux2" || (m.famille === "krea2" && loraReference())) return 1;
   return 0;
@@ -2554,7 +2567,7 @@ function maxReferencesRT() { const w = wfCourant("r"); return w ? Math.max(0, w.
 // Retouche conseillée : fineporn v5 (Krea 2) avec ses adaptateurs AnyPaint (zone peinte) et Identity Edit (ressemblance)
 const RECO_RT = () => [{k: "fineporn", el: FINEPORN, nom: "fineporn v5", detail: "fineporn v5 depuis Civitai (clé nécessaire, variante choisie selon la carte)"},
   {k: "anypaint", el: {lien: "studio:anypaint", nom: "Krea 2 AnyPaint"}, nom: "AnyPaint", detail: "Krea 2 AnyPaint (0,23 Go)"},
-  {k: "identite", el: {lien: "studio:identite", nom: "Krea 2 Identity Edit"}, nom: "Identity Edit", detail: "Krea 2 Identity Edit (1,8 Go)"}];
+  {k: "identite", el: {lien: "studio:identite", nom: "Krea 2 Identity Edit V2"}, nom: "Identity Edit V2", detail: "Krea 2 Identity Edit V2 (1,8 Go)"}];
 function recoRTManquants() {
   return RECO_RT().filter((x) => x.k === "fineporn" ? !finepornInstalle() : !adaptInstalle(x.k));
 }
@@ -2608,7 +2621,8 @@ function choisirModeleRT(rel) {
 }
 
 function rendreRetouche() {
-  const m = modeleRT(), d = defautsRT(m), qwen = !!(m && m.famille === "qwen21"), ident = modeIdentite(m), anyp = modeAnypaint(m);
+  const m = modeleRT(), d = defautsRT(m), qwen = !!(m && m.famille === "qwen21"), ident = modeIdentite(m), anyp = modeAnypaint(m),
+    gen = modeGeneral(m), edit = ident || gen;
   $("r-vide").classList.toggle("cache", !!RT.source);
   $("r-editeur").classList.toggle("cache", !RT.source); requestAnimationFrame(ajusterLots);
   $("r-toile").classList.toggle("tout", !!RT.tout);
@@ -2620,25 +2634,35 @@ function rendreRetouche() {
   const krea = !!(m && m.famille === "krea2") && !wfCourant("r"), choix = RT.modeKrea || "classique";
   $("r-krea-bloc").classList.toggle("cache", !krea);
   for (const b of $("r-krea-mode").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.mode === choix);
-  const manque = krea && choix !== "classique" && A.modeles && !adaptInstalle(choix), instA = manque && adaptEnCours(choix);
+  const cle = adaptMode(choix), manque = krea && choix !== "classique" && A.modeles && !adaptInstalle(cle), instA = manque && adaptEnCours(cle);
   $("r-adapt-installer").classList.toggle("cache", !manque);
   if (manque) {
-    $("r-adapt-texte").textContent = ADAPT[choix].texte;
+    $("r-adapt-texte").textContent = ADAPT[cle].texte;
     $("r-adapt-btn").disabled = !!instA;
-    $("r-adapt-btn").textContent = instA ? "Installation en cours…" + (instA.progres ? ` ${instA.progres.fait}${instA.progres.total ? " / " + instA.progres.total : ""} Go` : "") : "Installer " + ADAPT[choix].nom;
+    $("r-adapt-btn").textContent = instA ? "Installation en cours…" + (instA.progres ? ` ${instA.progres.fait}${instA.progres.total ? " / " + instA.progres.total : ""} Go` : "") : "Installer " + ADAPT[cle].nom;
   }
   $("r-krea-aide").textContent = !krea ? "" : choix === "anypaint" ? "AnyPaint : seule la zone peinte est recréée, le reste est conservé (bande de raccord de 32 px). Peut aussi agrandir le cadre (réglages fins)."
-    : choix === "identite" ? "Identity Edit : l'image est recréée selon ta consigne en gardant la ressemblance."
+    : choix === "identite" ? "Identity Edit : la personne est gardée et replacée selon ta consigne (scène, pose, tenue, lumière). Pour enlever ou recolorer quelque chose, prends General Edit."
+    : choix === "general" ? "General Edit : l'image est gardée, seul ce que demande ta consigne change (enlever, recolorer, fond, lumière, tenue…). Peins une zone pour protéger tout le reste."
     : "Classique : la zone peinte est recréée avec le modèle tel quel.";
-  $("r-force-bloc").classList.toggle("cache", ident || anyp);
+  $("r-force-bloc").classList.toggle("cache", edit || anyp);
   for (const x of document.querySelectorAll(".r-marge")) x.classList.toggle("cache", !anyp);
   const mg = margesRT(); for (const k of ["gauche", "droite", "haut", "bas"]) if (document.activeElement !== $("r-marge-" + k)) $("r-marge-" + k).value = mg[k];
-  $("r-ressemblance-bloc").classList.toggle("cache", !ident);
-  $("r-ressemblance").value = RT.ressemblance ?? 4; $("r-ressemblance-val").textContent = String(RT.ressemblance ?? 4);
-  $("r-grounding-champ").classList.toggle("cache", !ident);
+  $("r-ressemblance-bloc").classList.toggle("cache", !edit);
+  const v12 = RT.versionIdentite === "v1.2", boost = gen ? (RT.fidelite ?? 4) : (RT.ressemblance ?? (v12 ? 4 : 2));
+  $("r-ressemblance").value = boost; $("r-ressemblance-val").textContent = String(boost);
+  $("r-ressemblance-titre").textContent = gen ? "Fidélité à l'image" : "Ressemblance";
+  $("r-ressemblance-aide").textContent = gen ? "4 (conseillé) : l'image d'origine est bien gardée. Plus bas : plus de liberté pour la consigne."
+    : v12 ? "v1.2 : 4 conseillé. 1 : plus de liberté. Au-delà de 10, les suppressions et remplacements échouent."
+    : "2 (conseillé) : visage et silhouette bien gardés. Avec une personne ajoutée : 2 à 3. Plus haut : plus fidèle, moins libre.";
+  $("r-version-champ").classList.toggle("cache", !(krea && choix === "identite"));
+  $("r-version").value = v12 ? "v1.2" : "v2";
+  $("r-placement-champ").classList.toggle("cache", !(ident && !v12));
+  $("r-placement").value = RT.placement || "auto";
+  $("r-grounding-champ").classList.toggle("cache", !edit);
   $("r-grounding").value = String(RT.grounding || 768);
   // consigne
-  $("r-prompt-label").textContent = qwen || ident ? "Consigne de retouche" : "Ce qu'il faut obtenir";
+  $("r-prompt-label").textContent = qwen || edit ? "Consigne de retouche" : "Ce qu'il faut obtenir";
   $("r-prompt").placeholder = qwen ? (RT.tout ? "Ex. : passe la scène de nuit, sous la pluie" : "Ex. : remplace sa veste par un manteau rouge")
     : "Décris le résultat voulu dans la zone peinte…";
   $("r-prompt-aide").textContent = qwen ? "Qwen suit des consignes (« ajoute… », « remplace… », « change… »)." +
@@ -2652,6 +2676,10 @@ function rendreRetouche() {
   if (ident) {
     $("r-prompt").placeholder = RT.references.length ? "Ex. : Place this person at the cafe table, holding a coffee." : "Ex. : Change her outfit to a red raincoat.";
     $("r-prompt-aide").textContent = "Une consigne simple, de préférence en anglais. Visage trop « générique » ? Ajoute : « Preserve the exact facial identity » et décris ses traits. Zone peinte facultative : si tu peins, seule cette zone change.";
+  }
+  if (gen) {
+    $("r-prompt").placeholder = "Ex. : Remove the glass from the table. / Make the wall blue.";
+    $("r-prompt-aide").textContent = "Une consigne simple, de préférence en anglais (« remove… », « change… to… », « add… »). Zone peinte facultative : si tu peins, seule cette zone change.";
   }
   if ($("r-prompt").value !== RT.prompt) $("r-prompt").value = RT.prompt; majVider("r");
   if ($("r-negatif").value !== RT.negatif) $("r-negatif").value = RT.negatif;
@@ -2695,9 +2723,9 @@ function rendreRetouche() {
 function rendreReferences(m) {
   const box = $("r-ref"); box.textContent = "";
   const max = maxReferences(m), fam = m && m.famille;
-  const ident = modeIdentite(m), anypR = modeAnypaint(m);
+  const ident = modeIdentite(m), anypR = modeAnypaint(m) || modeGeneral(m);
   $("r-ref-titre").classList.toggle("cache", anypR); box.classList.toggle("cache", anypR);
-  if (anypR) return;   // AnyPaint : pas d'image de référence
+  if (anypR) return;   // AnyPaint, General Edit : pas d'image de référence
   $("r-ref-titre").textContent = ident ? "Personne à placer dans la scène (facultatif)" : max > 1 ? `Images de référence (facultatif, jusqu'à ${max})` : "Image de référence (facultatif)";
   if (max) {
     // petites vignettes : l'image à retoucher garde toute la place au centre
@@ -2813,10 +2841,10 @@ function demandeRetouche() {
   if (!m) { toast("Choisis un modèle.", true); return null; }
   const prompt = RT.prompt.trim();
   if (!prompt) { toast(m.famille === "qwen21" ? "Écris ta consigne de retouche." : "Décris ce que tu veux obtenir.", true); $("r-prompt").focus(); return null; }
-  const ident = modeIdentite(m), anyp = modeAnypaint(m);
-  if (m.famille === "krea2" && !wfCourant("r") && RT.modeKrea && RT.modeKrea !== "classique" && !adaptInstalle(RT.modeKrea)) {
-    toast(`Installe d'abord ${ADAPT[RT.modeKrea].nom} (bouton ci-dessus), ou choisis la méthode Classique.`, true); return null; }
-  if (!ident && !RT.tout && masqueVide() && !(anyp && avecMarges())) { toast("Peins la zone à modifier, ou active « Modifier toute l'image ».", true); return null; }
+  const ident = modeIdentite(m), anyp = modeAnypaint(m), gen = modeGeneral(m);
+  if (m.famille === "krea2" && !wfCourant("r") && RT.modeKrea && RT.modeKrea !== "classique" && !adaptInstalle(adaptMode(RT.modeKrea))) {
+    toast(`Installe d'abord ${ADAPT[adaptMode(RT.modeKrea)].nom} (bouton ci-dessus), ou choisis la méthode Classique.`, true); return null; }
+  if (!ident && !gen && !RT.tout && masqueVide() && !(anyp && avecMarges())) { toast("Peins la zone à modifier, ou active « Modifier toute l'image ».", true); return null; }
   const d = defautsRT(m);
   const base = RT.grainefixe && Number.isFinite(RT.graine) ? RT.graine : nouvelleGraine();
   const graines = [], prompts = [];
@@ -2828,7 +2856,10 @@ function demandeRetouche() {
     source: RT.source.id, references: RT.references.map((r) => r.id),
     masque: RT.tout ? (anyp ? masquePlein() : null) : masqueVide() ? null : masquePNG()};
   if (anyp) Object.assign(reglages, {anypaint: true, marges: margesRT(), force: 1, references: []});
-  if (ident) Object.assign(reglages, {identite: true, ressemblance: RT.ressemblance ?? 4, grounding: RT.grounding || 768, force: 1, negatif: ""});
+  if (ident) Object.assign(reglages, {identite: true, version_identite: RT.versionIdentite === "v1.2" ? "v1.2" : "v2",
+    ressemblance: RT.ressemblance ?? (RT.versionIdentite === "v1.2" ? 4 : 2), placement: RT.placement || "auto",
+    grounding: RT.grounding || 768, force: 1, negatif: ""});
+  if (gen) Object.assign(reglages, {general: true, ressemblance: RT.fidelite ?? 4, grounding: RT.grounding || 768, force: 1, negatif: "", references: []});
   return {reglages, prompts, graines};
 }
 function masquePlein() {
@@ -3726,7 +3757,11 @@ function brancher() {
     RT.references = RT.references.slice(0, maxReferencesRT()); sauverRT(); rendreRetouche(); };
   for (const k of ["gauche", "droite", "haut", "bas"]) $("r-marge-" + k).onchange = (e) => {
     RT.marges = Object.assign(margesRT(), {[k]: Math.max(0, Math.min(1024, Math.round((parseInt(e.target.value, 10) || 0) / 16) * 16))}); sauverRT(); rendreRetouche(); };
-  $("r-ressemblance").oninput = (e) => { RT.ressemblance = parseFloat(e.target.value); $("r-ressemblance-val").textContent = String(RT.ressemblance); sauverRT(); };
+  $("r-ressemblance").oninput = (e) => { const v = parseFloat(e.target.value);
+    if (modeGeneral()) RT.fidelite = v; else RT.ressemblance = v; $("r-ressemblance-val").textContent = String(v); sauverRT(); };
+  $("r-version").onchange = (e) => { RT.versionIdentite = e.target.value === "v1.2" ? "v1.2" : "v2"; RT.ressemblance = RT.versionIdentite === "v1.2" ? 4 : 2;
+    RT.steps = RT.cfg = null; sauverRT(); rendreRetouche(); };
+  $("r-placement").onchange = (e) => { RT.placement = ["aligne", "cote"].includes(e.target.value) ? e.target.value : "auto"; sauverRT(); };
   $("r-grounding").onchange = (e) => { RT.grounding = parseInt(e.target.value, 10) || 768; sauverRT(); };
   $("f-reid").onchange = (e) => { F.reid = e.target.checked; const m = modeleCourant();
     if (F.reid && m && m.defauts && m.defauts.variante === "Turbo") { F.steps = 8; F.cfg = 1; }
@@ -3734,7 +3769,7 @@ function brancher() {
   $("f-reid-btn").onclick = () => installerAdaptateur("reid", $("f-reid-liste").checked);
   $("f-reid-importer").onclick = () => choisirReid("fichier");
   $("f-reid-galerie").onclick = () => choisirReid("galerie");
-  $("r-adapt-btn").onclick = () => installerAdaptateur(RT.modeKrea, $("r-adapt-liste").checked);
+  $("r-adapt-btn").onclick = () => installerAdaptateur(adaptMode(RT.modeKrea), $("r-adapt-liste").checked);
   $("r-force").oninput = (e) => { RT.force = parseFloat(e.target.value); $("r-force-val").textContent = Math.round(RT.force * 100) + " %"; sauverRT(); };
   for (const [id, k, mini, maxi] of [["r-steps", "steps", 1, 150], ["r-cfg", "cfg", 0, 30], ["r-extension", "extension", 0, 64], ["r-flou", "flou", 0, 31]])
     $(id).onchange = (e) => { let v = parseFloat(e.target.value); if (!Number.isFinite(v)) v = null; else v = Math.max(mini, Math.min(maxi, k === "cfg" ? v : Math.round(v))); RT[k] = v ?? (k === "extension" ? 8 : k === "flou" ? 9 : null); sauverRT(); rendreRetouche(); };
